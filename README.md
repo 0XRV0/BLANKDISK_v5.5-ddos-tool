@@ -9,6 +9,7 @@ IT IS MADE FOR PYTHON
 new look and better proxys and WAY MORE OPTIONS OF DDOS SOME ARE IN THE WORK THE SAFE MODE NOW WORKS 
 
     ▌ LAYER 7  —  HTTP / proxy-routed
+ 
     ────────────────────────────────────────────────────────────
   [1]  GET          │ basic HTTP GET flood
   
