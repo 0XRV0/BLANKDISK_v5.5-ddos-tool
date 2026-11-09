@@ -10,18 +10,29 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
 
   · ★ ·  *  ·   ★    ·  *  ·   ★  ·  *  ·
   ╔════════════════════════════════════════════════════╗
+  
   ║ ★ LOST STAR · STRESS ENGINE v4.6.2 ★            ║
+  
   ║   proxy-routed · multi-vector · starlit              ║
+  
   ║   OWNED BY XRV — LOST STAR                           ║
-  ╚════════════════════════════════════════════════════╝
+  
+  ╚════════════════════════════════════════════════════╝ 
 
   ┌─ STATUS ─────────────────────────────────────────────┐
+  
   │ Public IP     →
+  
   │ LAN IP        →
+  
   │ Local locked  →
+  
   │ Proxies       →
+  
   │ Soft area     →
+  
   │ Host node     →
+  
   └──────────────────────────────────────────────────────┘
 
 
