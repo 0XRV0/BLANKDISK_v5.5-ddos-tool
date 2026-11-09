@@ -8,7 +8,7 @@ NEW UPDAATE IS HERE !!!!!!!!!! WILL BE MORE
                             ========V4.6.2 new update now lost star ========
 WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST STABLE ONE WE MADE AT THE MOMENT 
 
-  · ★ ·  *  ·   ★    ·  *  ·   ★  ·  *  ·
+  
   ╔════════════════════════════════════════════════════╗
   
   ║ ★ LOST STAR · STRESS ENGINE v4.6.2 ★            ║
