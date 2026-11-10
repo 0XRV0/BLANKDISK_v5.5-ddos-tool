@@ -44,12 +44,19 @@
 
   blank disk · v5.5.0 · owned by xrv · not for you
 
+
   ╭─ STATUS ─────────────────────────────────────────────╮
+ 
   │ Public IP     →
+
   │ LAN IP        →
+
   │ Local locked  →
+ 
   │ Proxies       →
+
   │ Soft area     →
+ 
   │ Host node     →
   ╰──────────────────────────────────────────────────────╯
 
