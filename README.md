@@ -1,43 +1,59 @@
-# lost star DDOS tools and more 
-ddos tool that uses open proxys to ddos took 2 days almost 3 have fun use at risk i am not responsible for anything that happens with this 
-THIS IS W.I.P DW IT WILL ALL BE UPDATED 
-IT IS MADE FOR PYTHON
+  BIG UPDATE NEW NAME WAS LOSTSTAR NOW BLANK DISK !!!!
+  
+  LOTS OF NEW THINGS MORE IS COMING SOON !!
+  
+  I WANT TO THANK THE PPL THAT HELPED (they said they did not want any credit)
 
-NEW UPDAATE IS HERE !!!!!!!!!! WILL BE MORE
+  WE ARE NOW ARE ON V5.5 ALOT HAS HAPPEND WE HAVE HAD ALOT OF UNSEEN STUFF THATS WHY WE ARE ON V5.5 
 
-                            ========V4.6.2 new update now lost star ========
-WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST STABLE ONE WE MADE AT THE MOMENT 
+  BUT YAYY NEW UPDATE COMES WITH 
 
-  
-  ╔════════════════════════════════════════════════════╗
-  
-  ║ ★ LOST STAR · STRESS ENGINE v4.6.2 ★            ║
-  
-  ║   proxy-routed · multi-vector · starlit              ║
-  
-  ║   OWNED BY XRV — LOST STAR                           ║
-  
-  ╚════════════════════════════════════════════════════╝ 
+  1.new themes
+  2.ip protection 
+  3.new name 
+  4.new look
+  5.more methods
+  6.ip resolver more then puller but i mean its alr
+  thats all tho
 
-  ┌─ STATUS ─────────────────────────────────────────────┐
-  
+  BYEEEEE!!!
+
+
+
+
+
+
+
+
+
+
+
+
+      ___           ___       ___           ___           ___                    ___                       ___           ___
+     /\  \         /\__\     /\  \         /\__\         /\__\                  /\  \          ___        /\  \         /\__\
+    /::\  \       /:/  /    /::\  \       /::|  |       /:/  /                 /::\  \        /\  \      /::\  \       /:/  /
+   /:/\:\  \     /:/  /    /:/\:\  \     /:|:|  |      /:/__/                 /:/\:\  \       \:\  \    /:/\ \  \     /:/__/
+  /::\~\:\__\   /:/  /    /::\~\:\  \   /:/|:|  |__   /::\  \____            /:/  \:\__\      /::\__\  _\:\~\ \  \   /::\  \____
+ /:/\:\ \:|__| /:/__/    /:/\:\ \:\__\ /:/ |:| /\__\ /:/\:::::\__\          /:/__/ \:|__|  __/:/\/__/ /\ \:\ \ \__\ /:/\:::::\__\
+ \:\~\:\/:/  / \:\  \    \/__\:\/:/  / \/__|:|/:/  / \/_|:|~~|~             \:\  \ /:/  / /\/:/  /    \:\ \:\ \/__/ \/_|:|~~|~
+  \:\ \::/  /   \:\  \        \::/  /      |:/:/  /     |:|  |               \:\  /:/  /  \::/__/      \:\ \:\__\      |:|  |
+   \:\/:/  /     \:\  \       /:/  /       |::/  /      |:|  |                \:\/:/  /    \:\__\       \:\/:/  /      |:|  |
+    \::/__/       \:\__\     /:/  /        /:/  /       |:|  |                 \::/__/      \/__/        \::/  /       |:|  |
+     ~~            \/__/     \/__/         \/__/         \|__|                  ~~                        \/__/         \|__|
+
+  blank disk · v5.5.0 · owned by xrv · not for you
+
+  ╭─ STATUS ─────────────────────────────────────────────╮
   │ Public IP     →
-  
   │ LAN IP        →
-  
   │ Local locked  →
-  
   │ Proxies       →
-  
   │ Soft area     →
-  
   │ Host node     →
-  
-  └──────────────────────────────────────────────────────┘
+  ╰──────────────────────────────────────────────────────╯
 
 
-    ▌ LAYER 7  —  HTTP / proxy-routed
-    ────────────────────────────────────────────────────────────
+  ┌─ LAYER 7 · HTTP ──────────────────────────────────────┐
   [1]  GET          │ basic HTTP GET flood
   
   [2]  POST         │ HTTP POST with body
@@ -86,9 +102,7 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
   
   [24] KILLER       │ mixed multi-thread blast
 
-
-    ▌ LAYER 4 / 3  —  raw / amp-shape
-    ────────────────────────────────────────────────────────────
+  ┌─ LAYER 4/3 · RAW ─────────────────────────────────────┐
   [30] TCP          │ TCP connect flood (proxied)
   
   [31] UDP          │ UDP datagram flood
@@ -111,8 +125,7 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
   
   [54] CLDAP        │ CLDAP-shaped UDP
 
-    ▌ GAMES  —  server query shapes
-    ────────────────────────────────────────────────────────────
+  ┌─ GAMES · QUERY ───────────────────────────────────────┐
   [36] VSE          │ Valve Source Engine query
   
   [37] TS3          │ TeamSpeak 3 ping shape
@@ -141,8 +154,7 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
   
   [49] DISCORD      │ Discord voice RTP-shape
 
-    ▌ LAYER 6  —  session / app shapes
-    ────────────────────────────────────────────────────────────
+  ┌─ LAYER 6 · SESSION ───────────────────────────────────┐
   [60] SOCKET      │ raw rapid socket open/close
   
   [61] HTTP2       │ HTTP/2 preface + frames shape
@@ -165,8 +177,7 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
   
   [76] MIX-L6      │ rotate L6 payloads
 
-    ▌ CONSOLE ENDER  —  PSN / Xbox / Switch shapes
-    ────────────────────────────────────────────────────────────
+  ┌─ CONSOLE ENDER · PSN/XBOX/SW ─────────────────────────┐
   [73] PSN           │ PlayStation network-shaped sessions
   
   [74] XBOX          │ Xbox Live-shaped sessions
@@ -177,8 +188,7 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
   
   [79] CONSOLE-UDP   │ console getinfo-shaped UDP
 
-    ▌ IP TOOLS  —  puller / resolve / discord id
-    ────────────────────────────────────────────────────────────
+  ┌─ IP TOOLS · PULLER ───────────────────────────────────┐
   [70] IP Puller      │ IP/domain → geo, ISP, city, ports
   
   [71] Batch resolve  │ many hosts → A records
@@ -186,8 +196,7 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
   [72] Discord ID     │ snowflake → account create time
 
 
-    ▌ RDP / FREE NODE / REMOTE
-    ────────────────────────────────────────────────────────────
+  ┌─ RDP / FREE NODE / REMOTE ────────────────────────────┐
   [55] RDP-TCP      │ RDP negotiate via proxies/Host node
   
   [56] NODE-HTTP    │ hit free/local node endpoint
@@ -202,21 +211,24 @@ WE FIXED ALOT AND ADDED WAY MORE SOME OF IT IS IN TESTING BUT THIS IS THE MOST S
   
   [81] CLEAR NODE   │ clear saved node/relay
 
-    ▌ PROXY BAY
-    ────────────────────────────────────────────────────────────
+  ┌─ PROXY BAY ───────────────────────────────────────────┐
   [90] Refresh proxies  │ re-fetch + probe open proxies
   
-  [93] Proxy status     │ pool (num)  live (num)
+  [93] Proxy status     │ pool 4,911  live 29
   
   [94] Validate live    │ re-probe sample for working nodes
   
   [95] Refresh public IP│ re-detect WAN address
-  
 
-    ▌ SYSTEMS
-    ────────────────────────────────────────────────────────────
+  ┌─ SYSTEMS ─────────────────────────────────────────────┐
+  [96] ROUTER SHIELD │ ON=save home router  OFF=no protection
+  
+  [97] THEME / COLORS │ mrrobot · pink · galaxy · toxic · ocean · more
+
+  [96b] │ ON=save home router  OFF=no protection
+  
   [91] History          │ past attacks this session
   
-  [92] Soft area []  │ rate caps — keeps home WiFi up
+  [92] Soft area [ON]  │ rate caps — keeps home WiFi up
   
   [0]  Shut Down
